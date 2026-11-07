@@ -1,0 +1,80 @@
+<div class="avh_record_viewer-page launch">
+<style>
+  .avh_record_viewer-page.launch { font-family: system-ui, sans-serif; max-width: 420px; margin: 3rem auto; padding: 1rem; text-align: center; }
+  .avh_record_viewer-page.launch h1 { font-size: 1.2rem; margin: 0 0 0.5rem; }
+  .avh_record_viewer-page.launch .variant { font-size: 0.85rem; color: #888; margin: 0 0 0.5rem; }
+  .avh_record_viewer-page.launch p { color: #555; margin: 0; }
+  .avh_record_viewer-page.launch .err { color: #b00020; margin-top: 1rem; }
+</style>
+<h1>AVH Record Viewer</h1>
+<p class="variant">Launch: scan overlay (flow meta)</p>
+<p id="status">Starting demo…</p>
+<script>
+(function () {
+  const FLOW_ARTIFACT = "torus/devops/AVHRecordViewer/flow/clinic_folder_overlay.json";
+  const INIT_ROUTE = "torus/devops/AVHRecordViewer/modules/avh_init.js";
+  const status = document.getElementById("status");
+  function setStatus(msg) { if (status) status.textContent = msg; }
+  function waitFor(fn, label, timeoutMs) {
+    const start = Date.now();
+    return new Promise((resolve, reject) => {
+      (function tick() {
+        if (fn()) return resolve();
+        if (Date.now() - start > timeoutMs) return reject(new Error("Timed out waiting for " + label));
+        setTimeout(tick, 50);
+      })();
+    });
+  }
+  function waitForSurf(timeoutMs) {
+    const start = Date.now();
+    return new Promise((resolve, reject) => {
+      async function tick() {
+        if (navi.mod.surf) return resolve();
+        setStatus("surf module not available yet, waiting");
+        const stored = await navi.storage.file.get("mod:surf.js");
+        if (stored?.media) { await navi.mount(stored.media); if (navi.mod.surf) return resolve(); }
+        if (Date.now() - start > timeoutMs) return reject(new Error("Timed out waiting for surf module"));
+        setTimeout(tick, 3000);
+      }
+      tick();
+    });
+  }
+    async function fetchInitSource() {
+    const url = (navi.resolveUrl ? navi.resolveUrl(INIT_ROUTE) : "/" + INIT_ROUTE);
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { Accept: "application/javascript, application/navi-module, text/javascript" },
+    });
+    if (!res.ok) throw new Error("init hostpark (" + res.status + "): " + INIT_ROUTE);
+    return res.text();
+  }
+  async function ensureInitMounted() {
+    if (navi.mod?.avh_init) {
+      try { await navi.unmount(navi.mod.avh_init); } catch (_) {}
+    }
+    await navi.mount(await fetchInitSource());
+    if (!navi.mod?.avh_init) throw new Error("avh_init did not register");
+    return navi.mod.avh_init;
+  }
+
+  async function run() {
+    await waitFor(() => typeof navi !== "undefined", "navi", 15000);
+    await waitFor(() => navi.storage, "navi storage", 15000);
+    await waitForSurf(120000);
+    setStatus("Mounting init from hostpark…");
+    const init = await ensureInitMounted();
+    setStatus("Bootstrapping demo…");
+    await navi.storage.item.set("avh:session:flow_artifact", FLOW_ARTIFACT);
+    const out = await init.commands.bootstrap.execute();
+    if (typeof out === "string" && /^Error:/i.test(out)) throw new Error(out);
+  }
+  run().catch((e) => {
+    setStatus("Could not start demo.");
+    const err = document.createElement("p");
+    err.className = "err";
+    err.textContent = e.message;
+    status?.after(err);
+  });
+})();
+</script>
+</div>

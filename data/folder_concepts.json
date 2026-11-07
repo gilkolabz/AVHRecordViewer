@@ -1,0 +1,107 @@
+{
+  "family": "folder",
+  "family_id": "avh:family:folder",
+  "note": "Folder composition feature catalog. Part of the product-wide catalog in data/artifacts.json. A feature is a stable namespace; artifact revisions are typed fragment/host ids under the folder family axis.",
+  "slots": [
+    "folder_owner_tab",
+    "add_affordance",
+    "folder_system",
+    "folder_back",
+    "scan_overlay"
+  ],
+  "features": {
+    "folder_owner_tab": {
+      "concern": "manilla tab showing the owner name at the top-left of the folder",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:owner_tab@r1",
+          "note": "baseline/overview manilla tab, left-aligned, shrink-to-fit owner name"
+        }
+      }
+    },
+    "add_affordance": {
+      "concern": "how the user starts adding a document/pet from the folder chrome",
+      "artifacts": {
+        "topright_r1": {
+          "id": "avh:fragment:folder:add_affordance@topright_r1",
+          "note": "teal '+ Add' button in the top-right button cluster; routes to doc_add (page-turn shopping variety)"
+        },
+        "besidetab_r1": {
+          "id": "avh:fragment:folder:add_affordance@besidetab_r1",
+          "note": "'+' fused beside the owner tab opening a dropdown (Add pet / Add document), as in overview layout."
+        }
+      }
+    },
+    "folder_system": {
+      "concern": "entry to the clinic system screen from the folder chrome",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:system@r1",
+          "note": "System button; kept in every folder variant per owner decision 2026-07-07"
+        }
+      }
+    },
+    "folder_back": {
+      "concern": "return to the numpad code entry",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:back@r1",
+          "note": "Back button -> mgr.go('numpad')"
+        }
+      }
+    },
+    "scan_overlay": {
+      "concern": "tap-a-scan opens the image in a full-screen modal overlay",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:scan_overlay@r1",
+          "note": "modal overlay markup + styles; ids consumed by host boot script"
+        }
+      }
+    },
+    "code_row": {
+      "concern": "row of colored digit chips for the active folder code",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:code_row@r1",
+          "note": "PENCILLED: present in overview/baseline only; DRIFT - never propagated to pile or page-turn. Fragment not yet extracted."
+        }
+      }
+    },
+    "pet_management": {
+      "concern": "list pets with add-pet and per-pet add/view-details actions",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:pet_management@r1",
+          "note": "PENCILLED: present in overview/baseline only; DRIFT - pile and page-turn dropped it. Lives partly in manager/registry modules."
+        }
+      }
+    },
+    "section_order": {
+      "concern": "clinic pref to order Pets-first vs Documents-first",
+      "artifacts": {
+        "r1": {
+          "id": "avh:fragment:folder:section_order@r1",
+          "note": "PENCILLED: overview/baseline honors prefs.folderSectionOrder; not present in pile/page-turn."
+        }
+      }
+    },
+    "layout_body": {
+      "concern": "how the folder body presents documents/scans (the mutually-exclusive layout feature)",
+      "artifacts": {
+        "overview_r1": {
+          "id": "avh:fragment:folder:layout_body@overview_r1",
+          "note": "inline sections + tap-scan-opens-overlay; the layout formerly called 'baseline' (legacy flow clinic_folder_overlay). Still carried whole inside ui/folder.html for now."
+        },
+        "pile_r1": {
+          "id": "avh:fragment:folder:layout_body@pile_r1",
+          "note": "fixed header + scrollable scan pile. Still carried whole inside ui/folder_scans_pile.html for now."
+        },
+        "pageturn_r1": {
+          "id": "avh:host:folder:layout_pageturn@r1",
+          "note": "paginated pager with tick strip. Host composed by the builder."
+        }
+      }
+    }
+  }
+}

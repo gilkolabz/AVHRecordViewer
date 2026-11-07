@@ -1,0 +1,158 @@
+{
+  "project_id": "avh_record_viewer",
+  "logical_root": "torus/devops/AVHRecordViewer",
+  "catalog": "data/artifacts.json",
+  "programs": "data/programs.json",
+  "note": "Launch graph index. Each clinic launch points at a program (full runtime compose). Devops tools (linker, graph) have no program.",
+  "nodes": [
+    {
+      "id": "avh:launch:journey:baseline",
+      "program_id": "avh:program:baseline",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Baseline clinic",
+      "route": "torus/devops/AVHRecordViewer/ui/launch.html",
+      "flow_id": "avh:flow:journey:numpad_direct",
+      "entry": "numpad",
+      "parents": [],
+      "test_hint": "Default product path. Numpad, owners list, system, capture.",
+      "legacy_id": "launch_baseline"
+    },
+    {
+      "id": "avh:launch:entry:splash",
+      "program_id": "avh:program:splash_overview",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Splash entry",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_splash.html",
+      "flow_id": "avh:flow:entry:numpad_splash",
+      "entry": "splash",
+      "parents": ["avh:launch:journey:baseline"],
+      "test_hint": "Splash then numpad; same folder as baseline.",
+      "legacy_id": "launch_splash"
+    },
+    {
+      "id": "avh:launch:folder:pile",
+      "program_id": "avh:program:folder_pile",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Folder — scan pile",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_folder_pile.html",
+      "flow_id": "avh:flow:folder:scans_pile",
+      "entry": "numpad",
+      "parents": ["avh:launch:journey:baseline"],
+      "test_hint": "Fixed header + scroll pile.",
+      "legacy_id": "launch_folder_pile"
+    },
+    {
+      "id": "avh:launch:folder:page_turn",
+      "program_id": "avh:program:folder_page_turn",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Folder — page turns",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_folder_scanpages.html",
+      "flow_id": "avh:flow:folder:scan_pages",
+      "entry": "numpad",
+      "parents": ["avh:launch:journey:baseline"],
+      "test_hint": "Page dots, inline scan, pet-nested sections, virtual→scan cross-links.",
+      "legacy_id": "launch_folder_scanpages"
+    },
+    {
+      "id": "avh:launch:folder:overview",
+      "program_id": "avh:program:folder_overview_overlay",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Folder — overlay default",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_folder_overlay.html",
+      "flow_id": "avh:flow:folder:overlay",
+      "entry": "numpad",
+      "parents": ["avh:launch:journey:baseline"],
+      "test_hint": "Flow meta overlay; user prefs still win.",
+      "legacy_id": "launch_folder_overlay"
+    },
+    {
+      "id": "avh:launch:folder:page_turn_owntab",
+      "program_id": "avh:program:folder_page_turn_owntab",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Folder — page turns (owner tab)",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_folder_page_turn_owntab.html",
+      "flow_id": "avh:flow:folder:page_turn_owntab",
+      "entry": "numpad",
+      "parents": ["avh:launch:folder:page_turn"],
+      "test_hint": "Composed page-turn with owner tab; manilla lip attached to body.",
+      "legacy_id": "launch_folder_page_turn_owntab"
+    },
+    {
+      "id": "avh:launch:folder:page_turn_owntab_addtab",
+      "program_id": "avh:program:folder_page_turn_owntab_addtab",
+      "artifact_type": "launch",
+      "status": "shipped",
+      "label": "Folder — page turns (owner tab + add)",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_folder_page_turn_owntab_addtab.html",
+      "flow_id": "avh:flow:folder:page_turn_owntab_addtab",
+      "entry": "numpad",
+      "parents": ["avh:launch:folder:page_turn_owntab"],
+      "test_hint": "Owner tab + baseline-style + beside tab dropdown on page-turn layout.",
+      "legacy_id": "launch_folder_page_turn_owntab_addtab"
+    },
+    {
+      "id": "avh:launch:entry:splash_pile",
+      "program_id": "avh:program:splash_pile",
+      "artifact_type": "launch",
+      "status": "stub",
+      "label": "Splash + scan pile",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_splash_pile.html",
+      "flow_id": "avh:flow:entry:splash_folder_pile",
+      "entry": "splash",
+      "parents": [
+        "avh:launch:entry:splash",
+        "avh:launch:folder:pile"
+      ],
+      "test_hint": "Combo stub: splash entry then pile folder. Smoke bootstrap only.",
+      "legacy_id": "launch_splash_pile"
+    },
+    {
+      "id": "avh:launch:entry:splash_scanpages",
+      "program_id": "avh:program:splash_page_turn",
+      "artifact_type": "launch",
+      "status": "stub",
+      "label": "Splash + page turns",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_splash_scanpages.html",
+      "flow_id": "avh:flow:entry:splash_folder_scan_pages",
+      "entry": "splash",
+      "parents": [
+        "avh:launch:entry:splash",
+        "avh:launch:folder:page_turn"
+      ],
+      "test_hint": "Combo stub: splash entry then page-turn folder.",
+      "legacy_id": "launch_splash_scanpages"
+    },
+    {
+      "id": "avh:launch:devops:linker",
+      "program_id": null,
+      "artifact_type": "qa_index",
+      "status": "shipped",
+      "label": "QA launch linker",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_linker.html",
+      "flow_id": null,
+      "entry": null,
+      "parents": [],
+      "test_hint": "Human bookmark: links + checklists. Not a bootstrap launch.",
+      "legacy_id": "launch_linker"
+    },
+    {
+      "id": "avh:launch:devops:graph",
+      "program_id": null,
+      "artifact_type": "graph",
+      "status": "shipped",
+      "label": "Launch graph explorer",
+      "route": "torus/devops/AVHRecordViewer/ui/launch_graph.html",
+      "flow_id": null,
+      "entry": null,
+      "parents": ["avh:launch:devops:linker"],
+      "test_hint": "Browse all launches; filter by type/status; open node detail.",
+      "legacy_id": "launch_graph"
+    }
+  ]
+}

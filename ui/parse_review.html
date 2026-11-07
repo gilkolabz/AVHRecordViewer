@@ -1,0 +1,249 @@
+<div class="avh_record_viewer-page parse-review">
+<style>
+  .avh_record_viewer-page.parse-review { font-family: system-ui, sans-serif; max-width: 480px; margin: 0.5rem auto; padding: 0.5rem; }
+  .parse-review h1 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+  .parse-review .meta { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .paper { background: #fffef8; border: 1px solid #d4b896; box-shadow: 2px 3px 8px rgba(0,0,0,0.1); padding: 0.75rem; margin-bottom: 1rem; }
+  .paper img { width: 100%; max-height: 200px; object-fit: contain; display: block; margin-bottom: 0.75rem; background: #f0ebe0; }
+  .ocr-status { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .ocr-status.err { color: #b00020; }
+  .parse-preview { font-size: 0.82rem; color: #555; margin-bottom: 0.75rem; padding: 0.5rem 0.65rem; background: #f5f0e6; border-radius: 6px; }
+  .parse-preview h4 { margin: 0 0 0.35rem; font-size: 0.8rem; color: #666; }
+  .parse-preview ul { margin: 0; padding-left: 1.1rem; }
+  .field { margin-bottom: 0.65rem; }
+  .field label { display: block; font-size: 0.75rem; color: #888; }
+  .field input, .field textarea { width: 100%; padding: 0.5rem; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  .actions button { padding: 0.85rem; min-height: 48px; border-radius: 8px; border: 1px solid #bbb; cursor: pointer; font-size: 1rem; }
+  .actions button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+  .actions button:disabled { opacity: 0.55; cursor: wait; }
+  .err { color: #b00020; text-align: center; }
+  .layout-editor .le-section { border: 1px solid #e0d4c0; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.5rem; background: #fffef8; }
+  .layout-editor .le-label { width: 100%; padding: 0.35rem; font-size: 0.88rem; font-weight: 600; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; margin-bottom: 0.35rem; }
+  .layout-editor .le-field-row { display: flex; gap: 4px; margin-bottom: 0.25rem; }
+  .layout-editor .le-field-key { flex: 0 0 38%; padding: 0.3rem; font-size: 0.82rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-field-val { flex: 1; padding: 0.3rem; font-size: 0.82rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-field-del { flex: 0 0 30px; border: 1px solid #e0b4b4; background: #fff5f5; color: #b00020; border-radius: 5px; cursor: pointer; }
+  .layout-editor .le-lines { width: 100%; margin-top: 0.35rem; padding: 0.35rem; font-size: 0.85rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-add-field, .layout-editor .le-remove { font-size: 0.72rem; padding: 0.2rem 0.45rem; border: 1px dashed #bbb; border-radius: 5px; background: #fafafa; cursor: pointer; margin-right: 6px; }
+  .layout-editor .le-remove { color: #b00020; border-color: #e0b4b4; }
+  .layout-editor .le-add-section { width: 100%; padding: 0.45rem; font-size: 0.82rem; border: 1px dashed #bbb; border-radius: 6px; background: #fafafa; cursor: pointer; }
+  .notes-field.hidden { display: none; }
+</style>
+<h1>Parse review</h1>
+<p class="meta" id="owner-meta"></p>
+<p class="ocr-status" id="ocr-status">Preparing…</p>
+<div class="parse-preview" id="parse-preview" hidden></div>
+<div class="paper" id="paper" hidden>
+  <img id="preview-img" alt="Scan preview" />
+  <div class="field"><label>Title</label><input type="text" id="field-title" /></div>
+  <div class="field notes-field" id="notes-field"><label>Notes</label><textarea id="field-notes" rows="5"></textarea></div>
+  <div class="field" id="layout-field" hidden><label>Parsed sections</label><div id="layout-editor-root"></div></div>
+</div>
+<p class="err" id="error-msg" hidden></p>
+<div class="actions">
+  <button type="button" class="primary" id="keep-both-btn" disabled>Keep scan + save virtual draft</button>
+  <button type="button" id="keep-scan-btn" disabled>Keep scan only</button>
+  <button type="button" id="back-btn">Back to capture</button>
+</div>
+<script>
+(function () {
+  const INIT_CAPTURE = "torus/devops/AVHRecordViewer/modules/avh_capture.js";
+  const MANUAL_HINT =
+    "Manual mode — turn on OCR in System -> Capabilities for automatic parsing (experimental).";
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) { document.body.innerHTML = "<p>Modules not loaded.</p>"; return; }
+
+  let pending = null;
+  let ocrDone = false;
+  let parsedLayout = null;
+  let layoutMod = null;
+
+  const keepBothBtn = document.getElementById("keep-both-btn");
+  const keepScanBtn = document.getElementById("keep-scan-btn");
+  const ocrStatus = document.getElementById("ocr-status");
+
+  function setActionsEnabled(on) {
+    keepBothBtn.disabled = !on;
+    keepScanBtn.disabled = !on;
+  }
+
+  async function ensureCapture() {
+    if (!navi.mod.avh_capture?.capture) {
+      const url = navi.resolveUrl ? navi.resolveUrl(INIT_CAPTURE) : "/" + INIT_CAPTURE;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { Accept: "application/javascript, application/navi-module, text/javascript" },
+      });
+      if (!res.ok) throw new Error("capture hostpark (" + res.status + "): " + INIT_CAPTURE);
+      await navi.mount(await res.text());
+    }
+    return navi.mod.avh_capture.capture;
+  }
+
+  function blobFromBase64(b64, mime) {
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  function showParsePreview(layout) {
+    const el = document.getElementById("parse-preview");
+    if (!layout?.sections?.length) {
+      el.hidden = true;
+      return;
+    }
+    const items = layout.sections.slice(0, 4).map((s) => {
+      const label = s.label || "(body)";
+      const n = s.lines.length + (s.fields?.length || 0);
+      return `<li><strong>${label}</strong> — ${n} item${n === 1 ? "" : "s"}</li>`;
+    });
+    const more = layout.sections.length > 4 ? `<li>…and ${layout.sections.length - 4} more</li>` : "";
+    el.innerHTML = `<h4>Layout pass (${layout.stats?.sectionCount || layout.sections.length} sections)</h4><ul>${items.join("")}${more}</ul>`;
+    el.hidden = false;
+  }
+
+  function enterManualMode() {
+    ocrStatus.textContent = MANUAL_HINT;
+    ocrStatus.classList.remove("err");
+    if (!document.getElementById("field-title").value) {
+      document.getElementById("field-title").value = pending.suggestedTitle || "Parsed document";
+    }
+    setActionsEnabled(true);
+  }
+
+  async function runOcr() {
+    ocrStatus.textContent = "Reading scan on device…";
+    ocrStatus.classList.remove("err");
+    setActionsEnabled(false);
+    let offProgress = null;
+    ocrDone = false;
+    try {
+      const ocrMod = navi.mod.avh_ocr;
+      if (!ocrMod?.ocr) throw new Error("OCR not ready");
+      offProgress = ocrMod.ocr.onProgress?.((m) => {
+        if (m.status === "recognizing text" && m.progress != null) {
+          ocrStatus.textContent = `Reading scan… ${Math.round(m.progress * 100)}%`;
+        } else if (m.status) {
+          ocrStatus.textContent = m.status;
+        }
+      });
+      const ocrResult = await ocrMod.ocr.recognizeBase64(pending.imageBase64);
+      const parseMod = await mgr.ensureParseModule();
+      parsedLayout = parseMod.parse.layoutFromOcr(ocrResult);
+      if (parsedLayout.title) {
+        document.getElementById("field-title").value = parsedLayout.title;
+      } else if (ocrResult.suggestedTitle) {
+        document.getElementById("field-title").value = ocrResult.suggestedTitle;
+      }
+      if (parsedLayout.sections?.length) {
+        layoutMod = await mgr.ensureVirtualViewModule();
+        layoutMod.layoutEditor.mount(document.getElementById("layout-editor-root"), parsedLayout);
+        document.getElementById("layout-field").hidden = false;
+        document.getElementById("notes-field").classList.add("hidden");
+      } else if (parsedLayout.notes) {
+        document.getElementById("field-notes").value = parsedLayout.notes.slice(0, 8000);
+      } else if (ocrResult.text) {
+        document.getElementById("field-notes").value = ocrResult.text.slice(0, 8000);
+      }
+      showParsePreview(parsedLayout);
+      ocrDone = true;
+      ocrStatus.textContent = parsedLayout.sections?.length
+        ? `OCR + layout pass — ${parsedLayout.sections.length} section(s). Review before saving.`
+        : "OCR complete — review and edit before saving.";
+    } catch (e) {
+      const msg = e?.message || (typeof e === "string" ? e : e ? String(e) : "unknown error");
+      ocrStatus.textContent = `OCR failed: ${msg}. ${MANUAL_HINT}`;
+      ocrStatus.classList.add("err");
+      if (!document.getElementById("field-title").value) {
+        document.getElementById("field-title").value = pending.suggestedTitle || "Parsed document";
+      }
+    } finally {
+      if (offProgress) offProgress();
+      setActionsEnabled(true);
+    }
+  }
+
+  async function init() {
+    pending = await mgr.getPendingParse();
+    if (!pending?.code || !pending?.imageBase64) {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "Nothing to parse — return to capture";
+      ocrStatus.hidden = true;
+      return;
+    }
+    const owner = await reg.getOwner(pending.code);
+    document.getElementById("owner-meta").textContent = owner
+      ? `${owner.ownerName} · ${pending.code}`
+      : pending.code;
+    document.getElementById("preview-img").src = `data:image/jpeg;base64,${pending.imageBase64}`;
+    document.getElementById("field-title").value = pending.suggestedTitle || "";
+    document.getElementById("field-notes").value = pending.suggestedNotes || "";
+    document.getElementById("paper").hidden = false;
+
+    if (mgr.isOcrReady()) {
+      await runOcr();
+    } else {
+      enterManualMode();
+    }
+  }
+
+  async function keepScanOnly() {
+    const cap = await ensureCapture();
+    const blob = blobFromBase64(pending.imageBase64, "image/jpeg");
+    await cap.persistScan(pending.code, blob, { petId: pending.petId });
+    await mgr.setPendingParse(null);
+    await mgr.go("folder");
+  }
+
+  async function keepBoth() {
+    const cap = await ensureCapture();
+    const blob = blobFromBase64(pending.imageBase64, "image/jpeg");
+    const scanDoc = await cap.persistScan(pending.code, blob, { petId: pending.petId });
+    const title = document.getElementById("field-title").value.trim() || "Parsed document";
+    let layout = parsedLayout;
+    let notes = document.getElementById("field-notes").value.trim();
+    if (layout && layoutMod && !document.getElementById("layout-field").hidden) {
+      const result = layoutMod.layoutEditor.read(
+        document.getElementById("layout-editor-root"),
+        parsedLayout
+      );
+      layout = result.layout;
+      notes = result.notes;
+    }
+    const content = {
+      notes,
+      sourceScanId: scanDoc.id,
+      parseStatus: ocrDone ? "ocr" : "manual",
+    };
+    if (layout) {
+      content.parseLayout = layout;
+      content.parseArtifact = "layout_v1";
+      content.viewTemplate = "layout_v1";
+    }
+    const virtualDoc = {
+      id: reg.newDocId(pending.code),
+      type: "virtual",
+      title,
+      created: new Date().toISOString(),
+      content,
+    };
+    if (pending.petId) virtualDoc.petId = pending.petId;
+    await reg.addDoc(pending.code, virtualDoc);
+    await mgr.setPendingParse(null);
+    await mgr.go("folder");
+  }
+
+  keepScanBtn.addEventListener("click", () => keepScanOnly().catch((e) => alert(e.message)));
+  keepBothBtn.addEventListener("click", () => keepBoth().catch((e) => alert(e.message)));
+  document.getElementById("back-btn").addEventListener("click", async () => {
+    await mgr.setPendingParse(null);
+    await mgr.go("capture");
+  });
+
+  init();
+})();
+</script>
+</div>

@@ -1,0 +1,135 @@
+<div class="avh_record_viewer-page system">
+<style>
+  .avh_record_viewer-page.system {
+    box-sizing: border-box;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    font-family: system-ui, sans-serif;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 0.5rem 0.5rem 1.5rem;
+  }
+  .avh_record_viewer-page.system h1 { font-size: 1.1rem; margin: 0 0 0.25rem; }
+  .system-section { border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; }
+  .system-section legend { font-size: 0.95rem; font-weight: 600; padding: 0 0.25rem; }
+  .section-hint { font-size: 0.82rem; color: #777; margin: 0.25rem 0 0.75rem; }
+  .field-group { margin-bottom: 0.75rem; }
+  .group-label { font-size: 0.85rem; font-weight: 600; margin: 0 0 0.35rem; }
+  .system-section label { display: block; padding: 0.4rem 0; cursor: pointer; }
+  .system-section input { margin-right: 0.5rem; }
+  .cap-status { font-size: 0.85rem; margin: 0.5rem 0; }
+  .cap-row { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.4rem 0; border-bottom: 1px solid #eee; }
+  .cap-row:last-child { border-bottom: none; }
+  .cap-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.03em; }
+  .cap-value { font-size: 0.9rem; word-break: break-word; }
+  .cap-row.cap-ok .cap-value { color: #2e7d32; }
+  .cap-row.cap-err .cap-value { color: #b00020; }
+  .cap-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5rem; }
+  .cap-actions button { padding: 0.5rem 0.75rem; font-size: 0.85rem; border-radius: 6px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; min-height: 40px; }
+  .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
+  .actions button { padding: 0.85rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb; cursor: pointer; min-height: 48px; }
+  .actions button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+  .note { font-size: 0.85rem; color: #666; margin-top: 0.5rem; }
+  .err { color: #b00020; font-size: 0.9rem; }
+  .announce { border: 1px solid #cfd8dc; border-radius: 8px; padding: 0.6rem 1rem; margin-bottom: 1rem; background: #f7faf9; }
+  .announce .app-line { font-size: 0.95rem; font-weight: 600; margin: 0; }
+  .announce .meta-line { font-size: 0.8rem; color: #666; margin: 0.15rem 0 0.5rem; }
+  .announce button { padding: 0.5rem 0.9rem; font-size: 0.9rem; border-radius: 6px; border: 1px solid #00695c; background: #00897b; color: #fff; cursor: pointer; min-height: 40px; }
+</style>
+<h1>System</h1>
+<!-- Shared announce header: renders in every variant (all flows route "system" here). -->
+<div class="announce" id="announce-block">
+  <p class="app-line" id="announce-app">AVH Record Viewer</p>
+  <p class="meta-line" id="announce-meta">Maintained by Gilkolabz</p>
+  <button type="button" id="feedback-btn">Feedback</button>
+</div>
+<p class="note" id="system-context"></p>
+<div id="sections-root"></div>
+<p class="note">Stored locally in navi.storage only. Future: virtual data API sync.</p>
+<div class="actions">
+  <button type="button" class="primary" id="save-btn">Save</button>
+  <button type="button" id="back-btn">Back</button>
+</div>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  if (!mgr) { document.body.innerHTML = "<p>Manager not loaded.</p>"; return; }
+
+  const root = document.getElementById("sections-root");
+  const backBtn = document.getElementById("back-btn");
+
+  async function initAnnounce() {
+    const rt = await mgr.describeRuntime();
+    const versionBits = [
+      rt.config_version ? `v${rt.config_version}` : null,
+      rt.manager_version ? `manager ${rt.manager_version}` : null,
+    ].filter(Boolean).join(" · ");
+    document.getElementById("announce-app").textContent =
+      `AVH Record Viewer${versionBits ? ` — ${versionBits}` : ""}`;
+    const variantLabel = rt.launch_label || rt.program_label || rt.flow_variant || rt.flow_id || "";
+    document.getElementById("announce-meta").textContent =
+      `Maintained by ${rt.maintainer}${variantLabel ? ` · Variant: ${variantLabel}` : ""}`;
+  }
+
+  document.getElementById("feedback-btn").addEventListener("click", () => {
+    mgr.openFeedback("system");
+  });
+
+  async function init() {
+    const systemMod = await mgr.ensureSystemModule();
+    const catalog = systemMod.catalog;
+    const prefs = await mgr.getPrefs();
+    const sectionIds = await mgr.getSystemSections();
+    const returnTo = await mgr.peekSystemReturn();
+
+    backBtn.textContent = mgr.systemReturnLabel(returnTo);
+    document.getElementById("system-context").textContent =
+      sectionIds.length > 1
+        ? "Sections below match your current clinic flow."
+        : "";
+
+    root.innerHTML = "";
+    for (const id of sectionIds) {
+      const section = catalog[id];
+      if (!section) {
+        const err = document.createElement("p");
+        err.className = "err";
+        err.textContent = `Unknown system section: ${id}`;
+        root.appendChild(err);
+        continue;
+      }
+      section.mount(root, prefs);
+    }
+  }
+
+  async function collectAll() {
+    const systemMod = navi.mod.avh_system;
+    const catalog = systemMod.catalog;
+    const sectionIds = await mgr.getSystemSections();
+    let partial = {};
+    for (const id of sectionIds) {
+      if (!catalog[id]?.read) continue;
+      partial = { ...partial, ...catalog[id].read(root) };
+    }
+    return partial;
+  }
+
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    await mgr.setPrefs(await collectAll());
+    await mgr.finishSystem();
+  });
+
+  backBtn.addEventListener("click", () => mgr.finishSystem());
+
+  init().catch((e) => {
+    root.innerHTML = `<p class="err">${e.message}</p>`;
+  });
+  initAnnounce().catch(() => {
+    /* header falls back to static text; never blocks settings */
+  });
+})();
+</script>
+</div>

@@ -1,0 +1,149 @@
+<div class="avh_record_viewer-page folder-pile">
+<style>
+  .avh_record_viewer-page.folder-pile { font-family: system-ui, sans-serif; max-width: 520px; margin: 0.5rem auto; padding: 0.25rem; }
+  .variant-note { font-size: 0.75rem; color: #888; text-align: center; margin-bottom: 0.35rem; }
+  .folder-manilla { display: flex; flex-direction: column; }
+  .folder-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; }
+  .folder-tab { background: #f5e6c8; border: 1px solid #d4b896; border-bottom: none; border-radius: 6px 6px 0 0; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.9rem; }
+  .folder-top-btns { display: flex; gap: 4px; padding-bottom: 1px; }
+  .folder-top-btns button { padding: 0.35rem 0.55rem; font-size: 0.85rem; min-height: 34px; border-radius: 6px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; touch-action: manipulation; }
+  .folder-top-btns button.system-btn { font-size: 0.8rem; }
+  .folder-top-btns button.add-btn { background: #00897b; color: #fff; border-color: #00695c; }
+  .folder-fixed { border: 1px solid #d4b896; border-top: none; padding: 0.75rem; background: #fffef8; }
+  .folder-pile-scroll { border: 1px solid #d4b896; border-top: none; border-radius: 0 0 6px 6px; background: #ebe4d6; max-height: 45vh; overflow-y: auto; padding: 0.75rem 0.75rem 1.5rem; box-shadow: inset 0 4px 12px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 0.9rem; color: #555; margin: 0 0 0.5rem; }
+  .doc-block { display: block; width: 100%; text-align: left; padding: 0.75rem; margin-bottom: 6px; border: 2px solid #b8c9e0; border-radius: 8px; background: #fff; cursor: pointer; }
+  .section-foot button { width: 100%; margin-top: 0.35rem; padding: 0.45rem; font-size: 0.82rem; border: 1px dashed #bbb; border-radius: 6px; background: #fff; cursor: pointer; color: #555; touch-action: manipulation; }
+  .pile-group h3 { font-size: 0.82rem; color: #666; margin: 0.75rem 0 0.35rem; }
+  .pile-card { display: block; width: 92%; padding: 1rem; border: 2px solid #d4b896; border-radius: 4px; background: #fffef8; cursor: pointer; min-height: 52px; box-shadow: 2px 3px 6px rgba(0,0,0,0.15); margin-bottom: -12px; text-align: left; }
+  .scan-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.55); }
+  .scan-overlay.open { display: flex; }
+  .scan-overlay .paper { max-width: 480px; width: 100%; max-height: 90vh; overflow: auto; background: #fffef8; border: 1px solid #d4b896; padding: 0.75rem; }
+</style>
+<p class="variant-note">Variant: fixed header + scrollable scan pile</p>
+<div class="folder-manilla">
+  <div class="folder-top">
+    <div class="folder-tab" id="folder-tab">… folder</div>
+    <div class="folder-top-btns">
+      <button type="button" class="system-btn" id="system-btn">System</button>
+      <button type="button" id="back-btn">Back</button>
+      <button type="button" class="add-btn" id="add-btn">+ Add</button>
+    </div>
+  </div>
+  <div class="folder-fixed" id="fixed-panel"></div>
+  <div class="folder-pile-scroll" id="pile-panel"></div>
+</div>
+<div class="scan-overlay" id="scan-overlay">
+  <div class="paper" id="overlay-paper">
+    <button type="button" id="overlay-close" style="float:right;min-height:44px">Close</button>
+    <div style="clear:both"></div>
+    <img id="overlay-img" alt="Scan" style="width:100%;margin-top:0.5rem" />
+  </div>
+</div>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) { document.body.innerHTML = "<p>Modules not loaded.</p>"; return; }
+  let currentOwner = null;
+  const overlayEl = document.getElementById("scan-overlay");
+
+  async function showScanOverlay(docId) {
+    const doc = currentOwner?.documents?.find((d) => d.id === docId);
+    if (!doc?.storagePath) return;
+    const raw = await navi.storage.file.load(doc.storagePath);
+    if (!raw) return;
+    document.getElementById("overlay-img").src = raw.startsWith("data:") ? raw : `data:image/jpeg;base64,${raw}`;
+    overlayEl.classList.add("open");
+  }
+
+  function sectionFoot(label, petId) {
+    const foot = document.createElement("div");
+    foot.className = "section-foot";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = label;
+    btn.addEventListener("click", () => mgr.openDocAdd({ petId: petId || "" }));
+    foot.appendChild(btn);
+    return foot;
+  }
+
+  async function render() {
+    const code = await mgr.getActiveCode();
+    const owner = code ? await reg.getOwner(code) : null;
+    currentOwner = owner;
+    if (!owner) return;
+    document.getElementById("folder-tab").textContent = `${owner.ownerName} folder`;
+    const prefs = await mgr.getPrefs();
+    const fixed = document.getElementById("fixed-panel");
+    fixed.innerHTML = `<div class="section"><h2>Pets</h2><p>${owner.pets.map((p) => p.name).join(", ") || "none"}</p></div>`;
+    const { general, sections } = mgr.groupDocsByPet(owner, prefs.virtualEnabled);
+    const virtualGeneral = general.filter((d) => d.type === "virtual");
+    const virtualSections = (owner.pets || []).map((pet) => ({
+      pet,
+      docs: (sections.find((s) => s.pet.id === pet.id)?.docs || []).filter((d) => d.type === "virtual"),
+    }));
+
+    function appendVirtualGroup(parent, title, docs, petId) {
+      const block = document.createElement("div");
+      block.className = "section";
+      block.innerHTML = `<h2>${title}</h2>`;
+      for (const d of docs) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "doc-block";
+        btn.textContent = d.title;
+        btn.addEventListener("click", () => mgr.openDoc(d.id));
+        block.appendChild(btn);
+      }
+      block.appendChild(sectionFoot("+ Add document", petId));
+      parent.appendChild(block);
+    }
+    appendVirtualGroup(fixed, "Records — General", virtualGeneral, "");
+    for (const { pet, docs } of virtualSections) {
+      appendVirtualGroup(fixed, `Records — ${pet.name}`, docs, pet.id);
+    }
+
+    const pile = document.getElementById("pile-panel");
+    pile.innerHTML = "<h2 style='font-size:0.9rem;color:#555;margin:0 0 0.75rem'>Scan pile — scroll</h2>";
+    const scans = owner.documents.filter((d) => d.type === "scan");
+    const scanGeneral = scans.filter((d) => !d.petId);
+    const scanSections = owner.pets
+      .map((pet) => ({ pet, docs: scans.filter((d) => d.petId === pet.id) }))
+      .filter((s) => s.docs.length);
+
+    function appendScanPile(parent, title, docs) {
+      if (!docs.length) return;
+      const g = document.createElement("div");
+      g.className = "pile-group";
+      g.innerHTML = `<h3>${title}</h3>`;
+      const stack = document.createElement("div");
+      for (const d of docs) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "pile-card";
+        btn.textContent = d.title;
+        btn.addEventListener("click", () => mgr.openScanView(d.id, () => showScanOverlay(d.id)));
+        stack.appendChild(btn);
+      }
+      g.appendChild(stack);
+      parent.appendChild(g);
+    }
+
+    if (!scans.length) pile.innerHTML += "<p>No scans in the pile</p>";
+    else {
+      appendScanPile(pile, "General", scanGeneral);
+      for (const { pet, docs } of scanSections) appendScanPile(pile, pet.name, docs);
+    }
+  }
+
+  document.getElementById("overlay-close").addEventListener("click", () => overlayEl.classList.remove("open"));
+  overlayEl.addEventListener("click", (e) => { if (e.target === overlayEl) overlayEl.classList.remove("open"); });
+  document.getElementById("overlay-paper").addEventListener("click", (e) => e.stopPropagation());
+  document.getElementById("system-btn").addEventListener("click", () => mgr.openSystem("folder"));
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("numpad"));
+  document.getElementById("add-btn").addEventListener("click", () => mgr.openDocAdd());
+  render();
+})();
+</script>
+</div>

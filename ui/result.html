@@ -1,0 +1,52 @@
+<div class="avh_record_viewer-page result">
+<style>
+  .avh_record_viewer-page { font-family: system-ui, sans-serif; max-width: 420px; margin: 2rem auto; padding: 1rem; }
+  .avh_record_viewer-page h1 { font-size: 1.2rem; margin: 0 0 0.5rem; }
+  .code-badge { display: inline-flex; gap: 4px; margin: 0.5rem 0 1rem; }
+  .code-badge span { width: 28px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; font-size: 0.95rem; }
+  .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 1.5rem; }
+  .actions button { padding: 0.75rem; font-size: 1rem; border-radius: 8px; cursor: pointer; border: 1px solid #bbb; background: #fafafa; }
+  .actions button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+</style>
+<h1>No record found</h1>
+<p>No owner folder for code:</p>
+<div class="code-badge" id="code-badge"></div>
+<p>What would you like to do?</p>
+<div class="actions">
+  <button type="button" class="primary" id="create-btn">Create new owner</button>
+  <button type="button" id="retry-btn">Try again</button>
+  <button type="button" id="cancel-btn">Cancel</button>
+</div>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  if (!mgr) {
+    document.body.innerHTML = "<p>Manager not loaded. Run: avh_record_viewer bootstrap</p>";
+    return;
+  }
+
+  const flow = mgr.getFlow();
+  const badge = document.getElementById("code-badge");
+
+  mgr.getPendingCode().then(async (code) => {
+    await mgr.loadDigitColors();
+    for (const d of code) {
+      const el = document.createElement("span");
+      el.textContent = d;
+      el.style.background = mgr.colorForDigit(d);
+      badge.appendChild(el);
+    }
+  });
+
+  document.getElementById("create-btn").addEventListener("click", () => {
+    mgr.go(flow.policy.result.create);
+  });
+  document.getElementById("retry-btn").addEventListener("click", () => {
+    mgr.go(flow.policy.result.try_again);
+  });
+  document.getElementById("cancel-btn").addEventListener("click", () => {
+    mgr.go(flow.policy.result.cancel);
+  });
+})();
+</script>
+</div>

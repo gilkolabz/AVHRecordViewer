@@ -1,0 +1,20 @@
+{
+  "id": "/torus/devops/AVHRecordViewer/ui/launch_splash_pile.html",
+  "name": "AVH Record Viewer",
+  "short_name": "AVH",
+  "description": "Vet clinic demo on foobarch - numpad journey, folder layouts, and composable programs.",
+  "start_url": "/torus/devops/AVHRecordViewer/ui/launch_splash_pile.html",
+  "scope": "/torus/devops/AVHRecordViewer/",
+  "display": "standalone",
+  "background_color": "#fffef8",
+  "theme_color": "#00897b",
+  "icons": [
+    {
+      "src": "/torus/devops/AVHRecordViewer/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ],
+  "lang": "en"
+}

@@ -1,0 +1,66 @@
+<div class="avh_record_viewer-page scan-sheet">
+<style>
+  .avh_record_viewer-page.scan-sheet { font-family: system-ui, sans-serif; max-width: 520px; margin: 0.5rem auto; padding: 0.5rem; }
+  .scan-sheet .toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+  .scan-sheet .toolbar button { padding: 0.65rem 1rem; min-height: 44px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; }
+  .scan-sheet h1 { font-size: 1rem; margin: 0 0 0.25rem; }
+  .scan-sheet .meta { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .paper-frame { background: #fffef8; border: 1px solid #d4b896; border-radius: 4px; box-shadow: 2px 3px 8px rgba(0,0,0,0.12); padding: 0.75rem; }
+  .paper-frame .label { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; word-break: break-all; }
+  .paper-frame img { display: block; width: 100%; height: auto; border-radius: 2px; background: #f0ebe0; }
+  .err { color: #b00020; text-align: center; margin-top: 1rem; }
+</style>
+<div class="toolbar">
+  <button type="button" id="back-btn">Back to folder</button>
+</div>
+<h1 id="doc-title">Scan</h1>
+<p class="meta" id="owner-meta"></p>
+<div class="paper-frame" id="paper" hidden>
+  <div class="label" id="scan-label"></div>
+  <img id="scan-img" alt="Document scan" />
+</div>
+<p class="err" id="error-msg" hidden></p>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) {
+    document.body.innerHTML = "<p>Modules not loaded.</p>";
+    return;
+  }
+
+  async function render() {
+    const code = await mgr.getActiveCode();
+    const docId = await mgr.getActiveDoc();
+    if (!code || !docId) {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "No scan selected";
+      return;
+    }
+    const owner = await reg.getOwner(code);
+    const doc = owner?.documents?.find((d) => d.id === docId);
+    if (!doc || doc.type !== "scan") {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "Scan not found";
+      return;
+    }
+    document.getElementById("doc-title").textContent = "Scan";
+    document.getElementById("owner-meta").textContent = `${owner.ownerName} · ${code}`;
+    document.getElementById("scan-label").textContent = doc.title;
+    const raw = await navi.storage.file.load(doc.storagePath);
+    if (!raw) {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "Image not in storage";
+      return;
+    }
+    const mime = doc.mime || "image/jpeg";
+    const src = raw.startsWith("data:") ? raw : `data:${mime};base64,${raw}`;
+    document.getElementById("scan-img").src = src;
+    document.getElementById("paper").hidden = false;
+  }
+
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("folder"));
+  render();
+})();
+</script>
+</div>

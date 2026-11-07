@@ -1,0 +1,97 @@
+<div class="avh_record_viewer-page create">
+<style>
+  .avh_record_viewer-page { font-family: system-ui, sans-serif; max-width: 420px; margin: 2rem auto; padding: 1rem; }
+  .avh_record_viewer-page h1 { font-size: 1.2rem; margin: 0 0 1rem; }
+  .code-badge { display: inline-flex; gap: 4px; margin-bottom: 1rem; }
+  .code-badge span { width: 28px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; font-size: 0.95rem; }
+  label { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; color: #444; }
+  input[type=text] { width: 100%; padding: 0.6rem; font-size: 1rem; border: 1px solid #bbb; border-radius: 6px; box-sizing: border-box; margin-bottom: 0.5rem; }
+  .pets-block { margin: 1rem 0; padding: 0.75rem; border: 1px solid #e0d4c0; border-radius: 8px; background: #fffef8; }
+  .pets-block h2 { font-size: 0.95rem; margin: 0 0 0.5rem; color: #555; }
+  .pet-row { display: flex; gap: 6px; margin-bottom: 0.5rem; align-items: center; }
+  .pet-row input { flex: 1; margin-bottom: 0; }
+  .pet-row button { flex-shrink: 0; padding: 0.45rem 0.55rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.8rem; color: #666; }
+  .add-pet-btn { width: 100%; padding: 0.55rem; border: 1px dashed #bbb; border-radius: 6px; background: #fafafa; cursor: pointer; font-size: 0.9rem; }
+  .actions { display: flex; gap: 8px; margin-top: 1rem; }
+  .actions button { flex: 1; padding: 0.75rem; font-size: 1rem; border-radius: 8px; cursor: pointer; border: 1px solid #bbb; }
+  .actions button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+  .note { font-size: 0.85rem; color: #666; margin-top: 0.75rem; }
+</style>
+<h1>Create owner record</h1>
+<div class="code-badge" id="code-badge"></div>
+<form id="create-form">
+  <label for="owner-name">Owner name</label>
+  <input type="text" id="owner-name" name="ownerName" required placeholder="Last name" />
+  <div class="pets-block">
+    <h2>Pets</h2>
+    <div id="pet-rows"></div>
+    <button type="button" class="add-pet-btn" id="add-pet-btn">Add pet</button>
+  </div>
+  <div class="actions">
+    <button type="button" id="cancel-btn">Cancel</button>
+    <button type="submit" class="primary">Create folder</button>
+  </div>
+</form>
+<p class="note">Pets are optional. You can add more from the folder later.</p>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  if (!mgr) {
+    document.body.innerHTML = "<p>Manager not loaded. Run: avh_record_viewer bootstrap</p>";
+    return;
+  }
+
+  const flow = mgr.getFlow();
+  const badge = document.getElementById("code-badge");
+  const petRows = document.getElementById("pet-rows");
+
+  function addPetRow(name = "") {
+    const row = document.createElement("div");
+    row.className = "pet-row";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Pet name";
+    input.value = name;
+    input.className = "pet-name-input";
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => row.remove());
+    row.appendChild(input);
+    row.appendChild(remove);
+    petRows.appendChild(row);
+    input.focus();
+  }
+
+  mgr.getPendingCode().then(async (code) => {
+    await mgr.loadDigitColors();
+    for (const d of code) {
+      const el = document.createElement("span");
+      el.textContent = d;
+      el.style.background = mgr.colorForDigit(d);
+      badge.appendChild(el);
+    }
+  });
+
+  document.getElementById("add-pet-btn").addEventListener("click", () => addPetRow());
+  document.getElementById("cancel-btn").addEventListener("click", () => {
+    mgr.go(flow.policy.create.cancel);
+  });
+
+  document.getElementById("create-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("owner-name").value.trim();
+    if (!name) return;
+    const pets = [...petRows.querySelectorAll(".pet-name-input")]
+      .map((el) => el.value.trim())
+      .filter(Boolean)
+      .map((petName) => ({ name: petName }));
+    try {
+      await mgr.createOwner(name, pets);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+})();
+</script>
+</div>

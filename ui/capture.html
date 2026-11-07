@@ -1,0 +1,251 @@
+<div class="avh_record_viewer-page capture state-live">
+<style>
+  .avh_record_viewer-page.capture { font-family: system-ui, sans-serif; max-width: 420px; margin: 1rem auto; padding: 0.5rem; }
+  .avh_record_viewer-page.capture h1 { font-size: 1.1rem; margin: 0 0 0.25rem; text-align: center; }
+  .avh_record_viewer-page.capture .phase { text-align: center; font-size: 0.9rem; color: #444; margin: 0 0 0.5rem; }
+  .avh_record_viewer-page.capture .meta { text-align: center; font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .camera-wrap { position: relative; background: #111; border-radius: 8px; overflow: hidden; aspect-ratio: 3/4; max-height: 55vh; }
+  .camera-wrap video, .camera-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .camera-wrap img { display: none; }
+  .avh_record_viewer-page.capture.state-review .camera-wrap video { display: none; }
+  .avh_record_viewer-page.capture.state-review .camera-wrap img { display: block; }
+  .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
+  .actions button { padding: 0.85rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb; cursor: pointer; background: #fafafa; min-height: 48px; }
+  .actions button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+  .actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .avh_record_viewer-page.capture.state-live .btn-review { display: none !important; }
+  .avh_record_viewer-page.capture.state-review .btn-live { display: none !important; }
+  .filing.btn-review { margin-top: 0.75rem; }
+  .filing label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+  .filing select { width: 100%; padding: 0.65rem; font-size: 1rem; border-radius: 8px; border: 1px solid #bbb; }
+  .err { color: #b00020; text-align: center; margin-top: 0.75rem; font-size: 0.9rem; }
+</style>
+<h1>Capture document</h1>
+<p class="phase" id="phase-label">Aim at the document</p>
+<p class="meta" id="owner-meta">Owner …</p>
+<div class="camera-wrap" id="camera-wrap">
+  <video id="camera-video" playsinline autoplay muted></video>
+  <img id="camera-preview" alt="Captured scan preview" />
+</div>
+<div class="filing btn-review" id="filing-block">
+  <label for="pet-picker">File under</label>
+  <select id="pet-picker">
+    <option value="">General (owner)</option>
+  </select>
+</div>
+<div class="actions" id="actions">
+  <button type="button" class="primary btn-live" id="snap-btn">Snap</button>
+  <button type="button" class="btn-live" id="cancel-btn">Back to folder</button>
+  <button type="button" class="primary btn-review" id="keep-btn" tabindex="-1">Keep scan</button>
+  <button type="button" class="btn-review" id="retry-btn" tabindex="-1">Try again</button>
+  <button type="button" class="btn-review" id="parse-btn" tabindex="-1" hidden>Parse</button>
+</div>
+<p class="err" id="error-msg" hidden></p>
+<script>
+(function () {
+  const INIT_CAPTURE_ROUTE =
+    "torus/devops/AVHRecordViewer/modules/avh_capture.js";
+  const root = document.querySelector(".avh_record_viewer-page.capture");
+  const mgr = navi.mod.avh_manager?.manager;
+  const video = document.getElementById("camera-video");
+  const preview = document.getElementById("camera-preview");
+  const phaseLabel = document.getElementById("phase-label");
+  const errorMsg = document.getElementById("error-msg");
+  let pendingBlob = null;
+  let previewUrl = null;
+  let activeCode = "";
+  let activeOwner = null;
+
+  function populatePetPicker(owner) {
+    const sel = document.getElementById("pet-picker");
+    sel.innerHTML = '<option value="">General (owner)</option>';
+    for (const p of owner?.pets || []) {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} (${p.species})`;
+      sel.appendChild(opt);
+    }
+  }
+
+  function showError(msg) {
+    errorMsg.hidden = !msg;
+    errorMsg.textContent = msg || "";
+  }
+
+  function setState(state) {
+    root.classList.remove("state-live", "state-review");
+    root.classList.add(state === "review" ? "state-review" : "state-live");
+    phaseLabel.textContent =
+      state === "review" ? "Review — keep or try again" : "Aim at the document";
+    const live = state === "live";
+    document.getElementById("snap-btn").disabled = !live;
+    document.getElementById("cancel-btn").disabled = !live;
+    document.getElementById("keep-btn").disabled = state !== "review" || !pendingBlob;
+    document.getElementById("retry-btn").disabled = state !== "review";
+  }
+
+  function clearPreview() {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+    preview.removeAttribute("src");
+    pendingBlob = null;
+  }
+
+  async function ensureCaptureModule() {
+    if (navi.mod.avh_capture?.capture) return navi.mod.avh_capture.capture;
+    const url = navi.resolveUrl ? navi.resolveUrl(INIT_CAPTURE_ROUTE) : "/" + INIT_CAPTURE_ROUTE;
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { Accept: "application/javascript, application/navi-module, text/javascript" },
+    });
+    if (!res.ok) throw new Error("capture hostpark (" + res.status + "): " + INIT_CAPTURE_ROUTE);
+    await navi.mount(await res.text());
+    return navi.mod.avh_capture.capture;
+  }
+
+  function showLive() {
+    clearPreview();
+    setState("live");
+  }
+
+  function showReview(blob) {
+    pendingBlob = blob;
+    previewUrl = URL.createObjectURL(blob);
+    preview.src = previewUrl;
+    setState("review");
+    mgr.getPrefs().then((p) => {
+      document.getElementById("parse-btn").hidden = !p.parseEnabled;
+    });
+  }
+
+  async function startCamera(cap) {
+    showLive();
+    showError("");
+    await cap.startCamera(video);
+    const prefs = await mgr.getPrefs();
+    document.getElementById("parse-btn").hidden = !prefs.parseEnabled;
+  }
+
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || "");
+        resolve(result.includes(",") ? result.split(",")[1] : result);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  if (!mgr) {
+    document.body.innerHTML = "<p>Manager not loaded. Run: avh_record_viewer bootstrap</p>";
+    return;
+  }
+
+  setState("live");
+
+  mgr.getActiveCode().then(async (code) => {
+    if (!code) {
+      showError("No active owner — open a folder first");
+      setState("live");
+      document.getElementById("snap-btn").disabled = true;
+      return;
+    }
+    activeCode = code;
+    const reg = navi.mod.avh_registry?.registry;
+    activeOwner = reg ? await reg.getOwner(code) : null;
+    document.getElementById("owner-meta").textContent = activeOwner
+      ? `${activeOwner.ownerName} · ${code}`
+      : code;
+    populatePetPicker(activeOwner);
+    const filingPet = await mgr.takeFilingPet();
+    if (filingPet) {
+      document.getElementById("pet-picker").value = filingPet;
+    }
+
+    try {
+      const cap = await ensureCaptureModule();
+      await startCamera(cap);
+    } catch (e) {
+      showError(e.message);
+      document.getElementById("snap-btn").disabled = true;
+    }
+  });
+
+  document.getElementById("snap-btn").addEventListener("click", async () => {
+    if (!root.classList.contains("state-live")) return;
+    const cap = navi.mod.avh_capture?.capture;
+    if (!cap) return;
+    document.getElementById("snap-btn").disabled = true;
+    try {
+      const blob = await cap.snapFromVideo(video);
+      cap.stopCamera();
+      showReview(blob);
+    } catch (e) {
+      showError(e.message);
+      document.getElementById("snap-btn").disabled = false;
+    }
+  });
+
+  document.getElementById("retry-btn").addEventListener("click", async () => {
+    if (!root.classList.contains("state-review")) return;
+    const cap = navi.mod.avh_capture?.capture;
+    if (!cap) return;
+    document.getElementById("retry-btn").disabled = true;
+    try {
+      await startCamera(cap);
+    } catch (e) {
+      showError(e.message);
+      setState("review");
+    } finally {
+      document.getElementById("retry-btn").disabled = false;
+    }
+  });
+
+  document.getElementById("keep-btn").addEventListener("click", async () => {
+    if (!root.classList.contains("state-review") || !pendingBlob || !activeCode) return;
+    const cap = navi.mod.avh_capture?.capture;
+    const keepBtn = document.getElementById("keep-btn");
+    keepBtn.disabled = true;
+    try {
+      const petId = document.getElementById("pet-picker").value || undefined;
+      await cap.persistScan(activeCode, pendingBlob, { petId });
+      await mgr.go("folder");
+    } catch (e) {
+      showError(e.message);
+      keepBtn.disabled = false;
+    }
+  });
+
+  document.getElementById("parse-btn").addEventListener("click", async () => {
+    if (!root.classList.contains("state-review") || !pendingBlob || !activeCode) return;
+    const parseBtn = document.getElementById("parse-btn");
+    parseBtn.disabled = true;
+    try {
+      const imageBase64 = await blobToBase64(pendingBlob);
+      const petId = document.getElementById("pet-picker").value || undefined;
+      await mgr.setPendingParse({
+        code: activeCode,
+        petId,
+        imageBase64,
+        suggestedTitle: "Parsed document",
+        suggestedNotes: "",
+      });
+      await mgr.go("parse_review");
+    } catch (e) {
+      showError(e.message);
+      parseBtn.disabled = false;
+    }
+  });
+
+  document.getElementById("cancel-btn").addEventListener("click", async () => {
+    if (!root.classList.contains("state-live")) return;
+    navi.mod.avh_capture?.capture?.stopCamera();
+    await mgr.go("folder");
+  });
+})();
+</script>
+</div>

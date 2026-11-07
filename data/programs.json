@@ -1,0 +1,187 @@
+{
+  "project_id": "avh_record_viewer",
+  "logical_root": "torus/devops/AVHRecordViewer",
+  "pwa_defaults": {
+    "name": "AVH Record Viewer",
+    "short_name": "AVH",
+    "description": "Vet clinic demo on foobarch - numpad journey, folder layouts, and composable programs.",
+    "theme_color": "#00897b",
+    "background_color": "#fffef8"
+  },
+  "note": "Programs compose family-local instances into full runnable clinic runtimes. Journey is spelled as territory: the numpad entry screen, the owners list, the system screen, and the spine flow that ties them together. Program = the layer above instances — what you actually launch and shop.",
+  "programs": {
+    "baseline": {
+      "id": "avh:program:baseline",
+      "why": "Default clinic path: numpad journey spine + overview folder layout.",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:overview"
+      },
+      "launch_id": "avh:launch:journey:baseline",
+      "flow_id": "avh:flow:journey:numpad_direct",
+      "entry": "numpad"
+    },
+    "splash_overview": {
+      "id": "avh:program:splash_overview",
+      "why": "Splash entry screen, then same journey/folder as baseline.",
+      "compose": {
+        "entry": "avh:instance:entry:splash",
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:entry:numpad_splash"
+        },
+        "folder": "avh:instance:folder:overview"
+      },
+      "launch_id": "avh:launch:entry:splash",
+      "flow_id": "avh:flow:entry:numpad_splash",
+      "entry": "splash",
+      "variant_of": "avh:program:baseline"
+    },
+    "folder_pile": {
+      "id": "avh:program:folder_pile",
+      "why": "Numpad journey + pile folder layout (fixed header, scrollable scan pile).",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:pile"
+      },
+      "launch_id": "avh:launch:folder:pile",
+      "flow_id": "avh:flow:folder:scans_pile",
+      "entry": "numpad",
+      "variant_of": "avh:program:baseline"
+    },
+    "folder_page_turn": {
+      "id": "avh:program:folder_page_turn",
+      "why": "Numpad journey + page-turn folder layout.",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:page_turn"
+      },
+      "launch_id": "avh:launch:folder:page_turn",
+      "flow_id": "avh:flow:folder:scan_pages",
+      "entry": "numpad",
+      "variant_of": "avh:program:baseline"
+    },
+    "folder_overview_overlay": {
+      "id": "avh:program:folder_overview_overlay",
+      "why": "Same overview folder instance; flow meta forces scan overlay presentation.",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:overview"
+      },
+      "launch_id": "avh:launch:folder:overview",
+      "flow_id": "avh:flow:folder:overlay",
+      "entry": "numpad",
+      "variant_of": "avh:program:baseline"
+    },
+    "folder_page_turn_owntab": {
+      "id": "avh:program:folder_page_turn_owntab",
+      "why": "Page-turn program with overview-style owner tab on the manilla lip.",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:page_turn_owntab"
+      },
+      "launch_id": "avh:launch:folder:page_turn_owntab",
+      "flow_id": "avh:flow:folder:page_turn_owntab",
+      "entry": "numpad",
+      "variant_of": "avh:program:folder_page_turn"
+    },
+    "folder_page_turn_owntab_addtab": {
+      "id": "avh:program:folder_page_turn_owntab_addtab",
+      "why": "Page-turn with owner tab and baseline-style + beside tab (Add pet / Add document).",
+      "compose": {
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:journey:numpad_direct"
+        },
+        "folder": "avh:instance:folder:page_turn_owntab_addtab"
+      },
+      "launch_id": "avh:launch:folder:page_turn_owntab_addtab",
+      "flow_id": "avh:flow:folder:page_turn_owntab_addtab",
+      "entry": "numpad",
+      "variant_of": "avh:program:folder_page_turn_owntab"
+    },
+    "splash_pile": {
+      "id": "avh:program:splash_pile",
+      "why": "Splash entry + pile folder (combo stub).",
+      "compose": {
+        "entry": "avh:instance:entry:splash",
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:entry:splash_folder_pile"
+        },
+        "folder": "avh:instance:folder:pile"
+      },
+      "launch_id": "avh:launch:entry:splash_pile",
+      "flow_id": "avh:flow:entry:splash_folder_pile",
+      "entry": "splash",
+      "variant_of": "avh:program:folder_pile"
+    },
+    "splash_page_turn": {
+      "id": "avh:program:splash_page_turn",
+      "why": "Splash entry + page-turn folder (combo stub).",
+      "compose": {
+        "entry": "avh:instance:entry:splash",
+        "journey": {
+          "entry_instance": "avh:instance:journey:numpad",
+          "owners_list_instance": "avh:instance:journey:owners_list",
+          "system_instance": "avh:instance:journey:system",
+          "result_instance": "avh:instance:journey:result",
+          "create_instance": "avh:instance:journey:create",
+          "spine_flow": "avh:flow:entry:splash_folder_scan_pages"
+        },
+        "folder": "avh:instance:folder:page_turn"
+      },
+      "launch_id": "avh:launch:entry:splash_scanpages",
+      "flow_id": "avh:flow:entry:splash_folder_scan_pages",
+      "entry": "splash",
+      "variant_of": "avh:program:folder_page_turn"
+    }
+  }
+}

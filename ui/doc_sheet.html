@@ -1,0 +1,116 @@
+<div class="avh_record_viewer-page doc-sheet">
+<style>
+  .avh_record_viewer-page.doc-sheet { font-family: system-ui, sans-serif; max-width: 520px; margin: 0.5rem auto; padding: 0.5rem; }
+  .doc-sheet .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .doc-sheet .toolbar .right { display: flex; gap: 8px; margin-left: auto; }
+  .doc-sheet .toolbar button { padding: 0.65rem 1rem; min-height: 44px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; }
+  .doc-sheet .toolbar button.edit-btn { background: #00897b; color: #fff; border-color: #00695c; }
+  .doc-sheet h1 { font-size: 1rem; margin: 0 0 0.25rem; }
+  .doc-sheet .meta { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .paper-frame { background: #fffef8; border: 1px solid #d4b896; border-radius: 4px; box-shadow: 2px 3px 8px rgba(0,0,0,0.12); padding: 1rem; }
+  .paper-frame h2 { font-size: 1.05rem; margin: 0 0 0.75rem; }
+  .field { margin-bottom: 0.65rem; font-size: 0.95rem; }
+  .field label { display: block; font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.03em; }
+  .view-meta { font-size: 0.8rem; color: #888; margin: 0 0 0.75rem; }
+  .layout-section { margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px dashed #e0d4c0; }
+  .layout-section:last-child { border-bottom: none; margin-bottom: 0; }
+  .layout-section h3 { font-size: 0.92rem; margin: 0 0 0.5rem; color: #444; text-transform: uppercase; letter-spacing: 0.04em; }
+  .layout-fields { margin: 0 0 0.5rem; }
+  .layout-fields dt { font-size: 0.75rem; color: #888; margin-top: 0.35rem; }
+  .layout-fields dd { margin: 0.1rem 0 0; font-size: 0.95rem; }
+  .layout-lines p { margin: 0.2rem 0; line-height: 1.4; font-size: 0.92rem; }
+  .layout-section.edited-notes pre { white-space: pre-wrap; font-family: inherit; font-size: 0.9rem; margin: 0; }
+  .source-scan-btn { width: 100%; margin: 0.75rem 0; padding: 0.85rem; font-size: 1rem; border: 2px solid #d4b896; border-radius: 8px; background: #fff; cursor: pointer; min-height: 48px; }
+  .err { color: #b00020; text-align: center; margin-top: 1rem; }
+</style>
+<div class="toolbar">
+  <button type="button" id="back-btn">Back to folder</button>
+  <div class="right">
+    <button type="button" class="edit-btn" id="edit-btn" hidden>Edit</button>
+  </div>
+</div>
+<h1>Virtual record</h1>
+<p class="meta" id="owner-meta"></p>
+<div class="paper-frame" id="paper" hidden>
+  <h2 id="doc-title"></h2>
+  <div id="fields"></div>
+  <div id="source-scan-slot"></div>
+</div>
+<p class="err" id="error-msg" hidden></p>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) {
+    document.body.innerHTML = "<p>Modules not loaded.</p>";
+    return;
+  }
+
+  const HIDDEN_KEYS = new Set(["sourceScanId", "parseStatus", "parseLayout", "parseArtifact", "viewTemplate", "recordKind"]);
+
+  async function renderFields(content) {
+    const el = document.getElementById("fields");
+    el.innerHTML = "";
+    const viewMod = await mgr.ensureVirtualViewModule();
+    viewMod.virtualView.render(el, content, { hiddenKeys: HIDDEN_KEYS });
+  }
+
+  async function render() {
+    const code = await mgr.getActiveCode();
+    const docId = await mgr.getActiveDoc();
+    if (!code || !docId) {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "No document selected";
+      return;
+    }
+    const owner = await reg.getOwner(code);
+    const doc = owner?.documents?.find((d) => d.id === docId);
+    if (!doc || doc.type !== "virtual") {
+      document.getElementById("error-msg").hidden = false;
+      document.getElementById("error-msg").textContent = "Virtual document not found";
+      return;
+    }
+    document.getElementById("owner-meta").textContent =
+      `${owner.ownerName} · ${code}` + (doc.updated ? ` · updated ${new Date(doc.updated).toLocaleString()}` : "");
+    document.getElementById("doc-title").textContent = doc.title;
+    if (doc.content?.recordKind === "pet_details") {
+      document.querySelector(".doc-sheet h1").textContent = "Pet details";
+    }
+    await renderFields(doc.content);
+
+    const editBtn = document.getElementById("edit-btn");
+    if (await mgr.canEditVirtual()) {
+      editBtn.hidden = false;
+      editBtn.onclick = () => mgr.openDocEdit();
+    } else {
+      editBtn.hidden = true;
+    }
+
+    const scanSlot = document.getElementById("source-scan-slot");
+    scanSlot.innerHTML = "";
+    let scanId = null;
+    if (typeof mgr.linkedScanId === "function") {
+      scanId = mgr.linkedScanId(owner, doc);
+    } else if (mgr.hasLinkedScan?.(owner, doc)) {
+      scanId = String(doc.content?.sourceScanId || "").trim() || null;
+    }
+    if (scanId) {
+      const scanBtn = document.createElement("button");
+      scanBtn.type = "button";
+      scanBtn.className = "source-scan-btn";
+      scanBtn.textContent = "View source scan";
+      scanBtn.addEventListener("click", () => mgr.openLinkedScan(scanId));
+      scanSlot.appendChild(scanBtn);
+    }
+
+    document.getElementById("paper").hidden = false;
+  }
+
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("folder"));
+  render().catch((e) => {
+    document.getElementById("error-msg").hidden = false;
+    document.getElementById("error-msg").textContent = e.message;
+  });
+})();
+</script>
+</div>

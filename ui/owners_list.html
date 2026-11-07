@@ -1,0 +1,70 @@
+<div class="avh_record_viewer-page owners-list">
+<style>
+  .avh_record_viewer-page.owners-list { font-family: system-ui, sans-serif; max-width: 420px; margin: 1rem auto; padding: 0.5rem; }
+  .owners-list h1 { font-size: 1.1rem; margin: 0 0 0.75rem; text-align: center; }
+  .owners-list .toolbar { margin-bottom: 0.75rem; }
+  .owners-list .toolbar button { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; min-height: 44px; }
+  .owner-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .owner-row { display: block; width: 100%; text-align: left; padding: 0.85rem 1rem; border: 2px solid #d4b896; border-radius: 8px; background: #fffef8; cursor: pointer; min-height: 52px; }
+  .owner-row:active { background: #f5f0e6; }
+  .owner-row .name { font-size: 1rem; font-weight: 600; }
+  .code-row { display: flex; gap: 4px; margin-top: 0.35rem; }
+  .code-row span { width: 22px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; font-size: 0.75rem; }
+  .empty { text-align: center; color: #666; padding: 2rem 0; }
+</style>
+<h1>Owner records</h1>
+<div class="toolbar">
+  <button type="button" id="back-btn">Back to numpad</button>
+</div>
+<ul class="owner-list" id="owner-list"></ul>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) {
+    document.body.innerHTML = "<p>Modules not loaded.</p>";
+    return;
+  }
+
+  async function render() {
+    await mgr.loadDigitColors();
+    const codes = await reg.loadIndex();
+    const list = document.getElementById("owner-list");
+    list.innerHTML = "";
+    if (!codes.length) {
+      list.innerHTML = "<li class='empty'>No owner records</li>";
+      return;
+    }
+    for (const code of codes) {
+      const owner = await reg.getOwner(code);
+      if (!owner) continue;
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "owner-row";
+      const nameEl = document.createElement("div");
+      nameEl.className = "name";
+      nameEl.textContent = owner.ownerName;
+      btn.appendChild(nameEl);
+      const codeRow = document.createElement("div");
+      codeRow.className = "code-row";
+      for (const d of owner.code) {
+        const chip = document.createElement("span");
+        chip.textContent = d;
+        chip.style.background = mgr.colorForDigit(d);
+        codeRow.appendChild(chip);
+      }
+      btn.appendChild(codeRow);
+      btn.addEventListener("click", async () => {
+        await mgr.openOwner(code);
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    }
+  }
+
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("numpad"));
+  render();
+})();
+</script>
+</div>

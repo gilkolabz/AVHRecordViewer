@@ -1,0 +1,176 @@
+<div class="avh_record_viewer-page launch-graph">
+<style>
+  .avh_record_viewer-page.launch-graph {
+    box-sizing: border-box;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    font-family: system-ui, sans-serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem 2rem;
+  }
+  .launch-graph h1 { font-size: 1.2rem; margin: 0 0 0.25rem; }
+  .launch-graph .meta { font-size: 0.85rem; color: #666; margin: 0 0 1rem; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
+  .toolbar label { font-size: 0.85rem; }
+  .toolbar select { padding: 0.35rem 0.5rem; border-radius: 6px; }
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .layout { grid-template-columns: 1fr; } }
+  .node-list { border: 1px solid #ddd; border-radius: 8px; max-height: min(55dvh, 28rem); overflow-y: auto; }
+  .node-btn { display: block; width: 100%; text-align: left; padding: 0.65rem 0.75rem; border: none; border-bottom: 1px solid #eee; background: #fff; cursor: pointer; font-size: 0.9rem; }
+  .node-btn:hover { background: #f5f5f5; }
+  .node-btn.active { background: #e8f5f3; }
+  .node-btn .tag { font-size: 0.72rem; color: #888; display: block; margin-top: 0.15rem; }
+  .detail { border: 1px solid #d4b896; border-radius: 8px; padding: 0.85rem 1rem; background: #fffef8; min-height: 12rem; }
+  .detail h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+  .detail dl { margin: 0; font-size: 0.88rem; }
+  .detail dt { color: #666; margin-top: 0.5rem; }
+  .detail dd { margin: 0.15rem 0 0; }
+  .detail .parents { font-size: 0.82rem; color: #555; margin: 0.75rem 0; }
+  .detail a.open { display: inline-block; margin-top: 0.75rem; padding: 0.6rem 1rem; background: #00897b; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; }
+  .detail a.open.disabled { background: #bbb; pointer-events: none; }
+  .foot { margin-top: 1.25rem; font-size: 0.85rem; }
+  .foot a { color: #00897b; }
+  .err { color: #b00020; }
+</style>
+<h1>Launch graph</h1>
+<p class="meta">Browse all demo launches and stubs. Separate from the QA linker — this tracks the variant matrix. Data: launch_index.json on hostpark.</p>
+<div class="toolbar">
+  <label>Type <select id="filter-type"><option value="">All types</option></select></label>
+  <label>Status <select id="filter-status"><option value="">All</option><option value="shipped">shipped</option><option value="stub">stub</option><option value="planned">planned</option></select></label>
+</div>
+<div class="layout">
+  <div class="node-list" id="node-list"></div>
+  <div class="detail" id="detail"><p class="meta">Select a node.</p></div>
+</div>
+<p class="foot"><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_linker.html">← Back to QA launch linker</a></p>
+<script>
+(function () {
+  const INDEX_ROUTE = "/torus/devops/AVHRecordViewer/data/launch_index.json";
+  const PROGRAMS_ROUTE = "/torus/devops/AVHRecordViewer/data/programs.json";
+  const listEl = document.getElementById("node-list");
+  const detailEl = document.getElementById("detail");
+  const typeFilter = document.getElementById("filter-type");
+  const statusFilter = document.getElementById("filter-status");
+  let index = null;
+  let programs = {};
+  let nodes = [];
+  let activeId = null;
+
+  function programFor(node) {
+    if (!node.program_id) return null;
+    return Object.values(programs).find((p) => p.id === node.program_id) || null;
+  }
+
+  function programTag(node) {
+    const p = programFor(node);
+    if (!p) return "";
+    const folder = p.compose?.folder;
+    return folder ? " · " + folder.split(":").pop() : "";
+  }
+
+  function composeHtml(p) {
+    if (!p?.compose) return "";
+    const renderValue = (value) => {
+      if (!value || typeof value !== "object") {
+        return `<dd style="word-break:break-all">${value}</dd>`;
+      }
+      const inner = Object.entries(value)
+        .map(([key, nested]) => `<dt>${key}</dt>${renderValue(nested)}`)
+        .join("");
+      return `<dd><dl style="margin:0">${inner}</dl></dd>`;
+    };
+    const rows = Object.entries(p.compose)
+      .map(([axis, value]) => `<dt>${axis}</dt>${renderValue(value)}`)
+      .join("");
+    return `<dt>Compose</dt><dd><dl style="margin:0">${rows}</dl></dd>`;
+  }
+
+  function urlFor(route) {
+    if (!route) return null;
+    return "https://foobarch.net/" + route.replace(/^\//, "");
+  }
+
+  function renderList() {
+    const t = typeFilter.value;
+    const s = statusFilter.value;
+    listEl.innerHTML = "";
+    const filtered = nodes.filter((n) => {
+      if (t && n.artifact_type !== t) return false;
+      if (s && n.status !== s) return false;
+      return true;
+    });
+    if (!filtered.length) {
+      listEl.innerHTML = "<p style='padding:0.75rem;color:#888'>No nodes match.</p>";
+      return;
+    }
+    for (const n of filtered) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "node-btn" + (n.id === activeId ? " active" : "");
+      btn.innerHTML = `${n.label}<span class="tag">${n.artifact_type} · ${n.status}${programTag(n)}</span>`;
+      btn.addEventListener("click", () => { activeId = n.id; renderList(); renderDetail(n); });
+      listEl.appendChild(btn);
+    }
+  }
+
+  function renderDetail(n) {
+    const openUrl = urlFor(n.route);
+    const p = programFor(n);
+    const parentLabels = (n.parents || [])
+      .map((pid) => nodes.find((x) => x.id === pid)?.label || pid)
+      .join(", ");
+    detailEl.innerHTML = `
+      <h2>${n.label}</h2>
+      <dl>
+        <dt>Id</dt><dd style="word-break:break-all">${n.id}</dd>
+        <dt>Status</dt><dd>${n.status}</dd>
+        <dt>Type</dt><dd>${n.artifact_type}</dd>
+        ${n.program_id ? `<dt>Program</dt><dd style="word-break:break-all">${n.program_id}</dd>` : ""}
+        ${p ? composeHtml(p) : ""}
+        ${n.flow_id ? `<dt>Flow</dt><dd style="word-break:break-all">${n.flow_id}</dd>` : ""}
+        ${n.entry ? `<dt>Entry</dt><dd>${n.entry}</dd>` : ""}
+        ${n.route ? `<dt>Route</dt><dd style="word-break:break-all">${n.route}</dd>` : ""}
+        ${n.legacy_id ? `<dt>Legacy id</dt><dd>${n.legacy_id}</dd>` : ""}
+      </dl>
+      ${parentLabels ? `<p class="parents"><strong>Derived from:</strong> ${parentLabels}</p>` : ""}
+      <p>${n.test_hint || ""}</p>
+      ${openUrl
+        ? `<a class="open" href="${openUrl}" target="_blank" rel="noopener">Open launch</a>`
+        : `<span class="open disabled">Not published yet</span>`}
+    `;
+  }
+
+  async function init() {
+    const [indexRes, programsRes] = await Promise.all([
+      fetch(INDEX_ROUTE),
+      fetch(PROGRAMS_ROUTE)
+    ]);
+    if (!indexRes.ok) throw new Error("Could not load launch_index.json");
+    index = await indexRes.json();
+    if (programsRes.ok) {
+      const programsDoc = await programsRes.json();
+      programs = programsDoc.programs || {};
+    }
+    nodes = index.nodes || [];
+    const types = [...new Set(nodes.map((n) => n.artifact_type))].sort();
+    for (const t of types) {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      typeFilter.appendChild(opt);
+    }
+    typeFilter.addEventListener("change", renderList);
+    statusFilter.addEventListener("change", renderList);
+    renderList();
+  }
+
+  init().catch((e) => {
+    listEl.innerHTML = `<p class="err">${e.message}</p>`;
+  });
+})();
+</script>
+</div>

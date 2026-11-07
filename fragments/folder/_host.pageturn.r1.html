@@ -1,0 +1,195 @@
+<!-- host: page-turn folder layout (pageturn_r1). Header chrome slot markers filled by _build_folder.mjs. Edit this host or fragments, then rebuild. -->
+<div class="avh_record_viewer-page folder-pages">
+<style>
+  .avh_record_viewer-page.folder-pages { font-family: system-ui, sans-serif; max-width: 520px; margin: 0.5rem auto; padding: 0.5rem; }
+  .variant-note { font-size: 0.75rem; color: #888; text-align: center; margin-bottom: 0.35rem; }
+  .folder-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; margin-bottom: 0.35rem; }
+  .folder-top-btns { display: flex; gap: 4px; flex-shrink: 0; padding-bottom: 1px; }
+  .folder-top button { padding: 0.35rem 0.55rem; font-size: 0.85rem; min-height: 34px; border-radius: 6px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; touch-action: manipulation; }
+  .folder-body { border: 1px solid #d4b896; border-radius: 6px; padding: 0.75rem; background: #fffef8; box-shadow: 2px 3px 8px rgba(0,0,0,0.08); min-height: 50vh; }
+  .page-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.85rem; }
+  .page-nav button.step { width: 40px; height: 40px; flex-shrink: 0; font-size: 1.1rem; line-height: 1; border-radius: 6px; border: 1px solid #d4b896; background: #fffef8; color: #6b5a3a; cursor: pointer; touch-action: manipulation; }
+  .page-nav button.step:disabled { opacity: 0.35; cursor: default; }
+  .page-readout { flex: 1; text-align: center; min-width: 0; }
+  .page-readout .count { font-size: 0.8rem; color: #8a7a5c; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  .page-readout .kind { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; color: #9a8b6e; }
+  .page-ticks { display: flex; gap: 3px; justify-content: center; margin-top: 0.5rem; overflow-x: auto; padding-bottom: 2px; }
+  .page-tick { width: 18px; height: 6px; flex-shrink: 0; border-radius: 3px; background: #e6dcc4; border: none; cursor: pointer; padding: 0; touch-action: manipulation; }
+  .page-tick.active { background: #b8925a; }
+  .doc-block, .scan-action-btn { display: block; width: 100%; text-align: left; padding: 0.75rem; margin-top: 0.75rem; border: 2px solid #d4b896; border-radius: 8px; background: #fff; cursor: pointer; min-height: 44px; box-sizing: border-box; font-size: 0.95rem; }
+  .doc-block.virtual { border-color: #b8c9e0; }
+  .scan-label { font-size: 0.8rem; color: #666; word-break: break-all; margin: 0.25rem 0 0.5rem; }
+  .scan-inline-wrap { border: 1px solid #d4b896; background: #fff; padding: 0.5rem; margin-top: 0.5rem; border-radius: 4px; box-shadow: 1px 2px 6px rgba(0,0,0,0.08); cursor: pointer; }
+  .scan-inline-wrap img { display: block; width: 100%; max-height: 55vh; object-fit: contain; background: #f0ebe0; }
+</style>
+<p class="variant-note">Variant: tap page turns — with owner tab (composed)</p>
+<div class="folder-top">
+  <!--slot:folder_owner_tab-->
+  <div class="folder-top-btns">
+    <!--slot:folder_system-->
+    <!--slot:folder_back-->
+    <!--slot:add_affordance-->
+  </div>
+</div>
+<div class="folder-body" id="page-body"></div>
+<div class="page-nav">
+  <button type="button" class="step" id="prev-btn" title="Previous page">‹</button>
+  <div class="page-readout">
+    <span class="count" id="page-count"></span>
+    <span class="kind" id="page-kind"></span>
+  </div>
+  <button type="button" class="step" id="next-btn" title="Next page">›</button>
+</div>
+<div class="page-ticks" id="page-ticks"></div>
+<!--slot:scan_overlay-->
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) { document.body.innerHTML = "<p>Modules not loaded.</p>"; return; }
+  let pages = [];
+  let pageIndex = 0;
+  let currentOwner = null;
+  const overlayEl = document.getElementById("scan-overlay");
+
+  async function showScanOverlay(docId) {
+    const doc = currentOwner?.documents?.find((d) => d.id === docId);
+    if (!doc?.storagePath) return;
+    const raw = await navi.storage.file.load(doc.storagePath);
+    if (!raw) return;
+    document.getElementById("overlay-img").src = raw.startsWith("data:") ? raw : `data:image/jpeg;base64,${raw}`;
+    overlayEl.classList.add("open");
+  }
+
+  async function openScanFromPage(doc) {
+    const mode = await mgr.scanPresentationMode();
+    if (mode !== "overlay") await mgr.saveFolderPage(pageIndex);
+    await mgr.openScanView(doc.id, () => showScanOverlay(doc.id));
+  }
+
+  async function scanImageSrc(doc) {
+    if (!doc?.storagePath) return null;
+    const raw = await navi.storage.file.load(doc.storagePath);
+    if (!raw) return null;
+    return raw.startsWith("data:") ? raw : `data:image/jpeg;base64,${raw}`;
+  }
+
+  async function buildPages(owner) {
+    const prefs = await mgr.getPrefs();
+    const inline = !!prefs.scanPageInline;
+    const showVirtual = prefs.virtualEnabled !== false;
+    const out = [];
+    out.push({
+      kind: "Overview",
+      render(el) {
+        el.innerHTML = `<h2>${owner.ownerName} folder</h2><p><strong>Pets:</strong> ${owner.pets.map((p) => p.name).join(", ") || "none"}</p>`;
+      },
+    });
+    for (const d of (showVirtual ? owner.documents.filter((x) => x.type === "virtual") : [])) {
+      const kind = d.content?.recordKind === "pet_details" ? "Pet details" : "Record";
+      out.push({
+        kind,
+        render(el) {
+          el.innerHTML = `<h2>${kind}</h2>`;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "doc-block virtual";
+          btn.textContent = d.title;
+          btn.addEventListener("click", async () => {
+            await mgr.saveFolderPage(pageIndex);
+            await mgr.openDoc(d.id);
+          });
+          el.appendChild(btn);
+        },
+      });
+    }
+    for (const d of owner.documents.filter((x) => x.type === "scan")) {
+      out.push({
+        kind: "Scan",
+        async render(el) {
+          el.innerHTML = "<h2>Scan</h2>";
+          const label = document.createElement("p");
+          label.className = "scan-label";
+          label.textContent = d.title;
+          el.appendChild(label);
+          if (inline) {
+            const src = await scanImageSrc(d);
+            if (src) {
+              const wrap = document.createElement("div");
+              wrap.className = "scan-inline-wrap";
+              const img = document.createElement("img");
+              img.src = src;
+              img.alt = "Document scan";
+              wrap.appendChild(img);
+              wrap.addEventListener("click", () => openScanFromPage(d));
+              el.appendChild(wrap);
+            }
+          }
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "scan-action-btn";
+          btn.textContent = inline ? "View full size" : "Tap to view scan";
+          btn.addEventListener("click", () => openScanFromPage(d));
+          el.appendChild(btn);
+        },
+      });
+    }
+    if (out.length === 1) {
+      out.push({ kind: "Empty", render(el) { el.innerHTML = "<p>No documents yet — use + Add.</p>"; } });
+    }
+    return out;
+  }
+
+  async function renderPage() {
+    const body = document.getElementById("page-body");
+    body.innerHTML = "";
+    await pages[pageIndex].render(body);
+    document.getElementById("page-count").textContent = `${pageIndex + 1} / ${pages.length}`;
+    document.getElementById("page-kind").textContent = pages[pageIndex].kind || "";
+    document.querySelectorAll(".page-tick").forEach((el, i) => el.classList.toggle("active", i === pageIndex));
+    document.getElementById("prev-btn").disabled = pageIndex <= 0;
+    document.getElementById("next-btn").disabled = pageIndex >= pages.length - 1;
+  }
+
+  async function init() {
+    const code = await mgr.getActiveCode();
+    const owner = code ? await reg.getOwner(code) : null;
+    currentOwner = owner;
+    if (!owner) return;
+    const tab = document.getElementById("folder-tab");
+    if (tab) tab.textContent = `${owner.ownerName} folder`;
+    pages = await buildPages(owner);
+    const restored = await mgr.takeFolderPage();
+    pageIndex = restored !== null && !Number.isNaN(restored) ? restored : 0;
+    if (pageIndex >= pages.length) pageIndex = 0;
+    const ticks = document.getElementById("page-ticks");
+    ticks.innerHTML = "";
+    pages.forEach((p, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "page-tick";
+      b.title = `${i + 1}. ${p.kind || "Page"}`;
+      b.addEventListener("click", () => { pageIndex = i; renderPage(); });
+      ticks.appendChild(b);
+    });
+    await renderPage();
+  }
+
+  document.getElementById("overlay-close").addEventListener("click", () => overlayEl.classList.remove("open"));
+  overlayEl.addEventListener("click", (e) => { if (e.target === overlayEl) overlayEl.classList.remove("open"); });
+  document.getElementById("overlay-paper").addEventListener("click", (e) => e.stopPropagation());
+  document.getElementById("system-btn").addEventListener("click", async () => {
+    await mgr.saveFolderPage(pageIndex);
+    await mgr.openSystem("folder");
+  });
+  document.getElementById("prev-btn").addEventListener("click", () => { if (pageIndex > 0) { pageIndex--; renderPage(); } });
+  document.getElementById("next-btn").addEventListener("click", () => { if (pageIndex < pages.length - 1) { pageIndex++; renderPage(); } });
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("numpad"));
+  document.getElementById("add-btn").addEventListener("click", async () => {
+    await mgr.saveFolderPage(pageIndex);
+    await mgr.openDocAdd();
+  });
+  init();
+})();
+</script>
+</div>

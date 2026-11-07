@@ -1,0 +1,108 @@
+{
+  "family": "folder",
+  "family_id": "avh:family:folder",
+  "note": "Folder-family instances: prebaked folder layouts (one family's contribution). Composed into full programs via data/programs.json. Instance always means family-local here; program is the layer above.",
+  "instances": {
+    "folder_overview": {
+      "id": "avh:instance:folder:overview",
+      "role": "hand-authored",
+      "layout": "overview",
+      "source_rel": "ui/folder.html",
+      "flow_rel": "flow/clinic_folder_overlay.json",
+      "launch_rel": "ui/launch_folder_overlay.html",
+      "why": "the layout formerly anointed 'baseline': inline Pets+Documents sections, tap-scan opens a modal overlay; richest feature set.",
+      "features": [
+        "avh:fragment:folder:owner_tab@r1",
+        "avh:fragment:folder:add_affordance@besidetab_r1",
+        "avh:fragment:folder:system@r1",
+        "avh:fragment:folder:back@r1",
+        "avh:fragment:folder:scan_overlay@r1",
+        "avh:fragment:folder:code_row@r1",
+        "avh:fragment:folder:pet_management@r1",
+        "avh:fragment:folder:section_order@r1",
+        "avh:fragment:folder:layout_body@overview_r1"
+      ],
+      "notes": "Most complete instance. Candidate to rename away from 'baseline'. Future: rows could cross-link into the page-turn pager (table-of-contents idea, owner 2026-07-07)."
+    },
+    "folder_pile": {
+      "id": "avh:instance:folder:pile",
+      "role": "hand-authored",
+      "layout": "pile",
+      "source_rel": "ui/folder_scans_pile.html",
+      "flow_rel": "flow/clinic_folder_scans_pile.json",
+      "launch_rel": "ui/launch_folder_pile.html",
+      "why": "fixed header (records) + scrollable scan pile.",
+      "features": [
+        "avh:fragment:folder:owner_tab@r1",
+        "avh:fragment:folder:add_affordance@topright_r1",
+        "avh:fragment:folder:system@r1",
+        "avh:fragment:folder:back@r1",
+        "avh:fragment:folder:scan_overlay@r1",
+        "avh:fragment:folder:layout_body@pile_r1"
+      ],
+      "drift": "MISSING code_row, pet_management, section_order (present in overview). Accumulated drift, not a considered choice."
+    },
+    "folder_page_turn": {
+      "id": "avh:instance:folder:page_turn",
+      "role": "hand-authored",
+      "layout": "page_turn",
+      "source_rel": "ui/folder_scan_pages.html",
+      "flow_rel": "flow/clinic_folder_scan_pages.json",
+      "launch_rel": "ui/launch_folder_scanpages.html",
+      "why": "paginated pager with compact tick strip; scans as turnable pages.",
+      "features": [
+        "avh:fragment:folder:add_affordance@topright_r1",
+        "avh:fragment:folder:system@r1",
+        "avh:fragment:folder:back@r1",
+        "avh:fragment:folder:scan_overlay@r1",
+        "avh:host:folder:layout_pageturn@r1"
+      ],
+      "drift": "MISSING folder_owner_tab (owner name only inside body pages), code_row, pet_management, section_order."
+    },
+    "folder_page_turn_owntab": {
+      "id": "avh:instance:folder:page_turn_owntab",
+      "role": "builder-generated",
+      "layout": "page_turn",
+      "variant_of": "avh:instance:folder:page_turn",
+      "why": "Page-turn with overview-style owner tab on the manilla lip (no + affordance).",
+      "host_id": "avh:host:folder:layout_pageturn@r1",
+      "compose": {
+        "folder_owner_tab": "avh:fragment:folder:owner_tab@r1",
+        "folder_system": "avh:fragment:folder:system@r1",
+        "folder_back": "avh:fragment:folder:back@r1",
+        "scan_overlay": "avh:fragment:folder:scan_overlay@r1"
+      },
+      "flow_id": "avh:flow:folder:page_turn_owntab",
+      "launch_id": "avh:launch:folder:page_turn_owntab",
+      "launch_label": "folder page turn (owner tab)",
+      "flow_patch": {
+        "meta": {
+          "layout": "page_turn"
+        }
+      }
+    },
+    "folder_page_turn_owntab_addtab": {
+      "id": "avh:instance:folder:page_turn_owntab_addtab",
+      "role": "builder-generated",
+      "layout": "page_turn",
+      "variant_of": "avh:instance:folder:page_turn_owntab",
+      "why": "Page-turn owner tab plus baseline-style + beside tab (Add pet / Add document dropdown).",
+      "host_id": "avh:host:folder:layout_pageturn@r1",
+      "compose": {
+        "folder_owner_tab": "avh:fragment:folder:owner_tab@r1",
+        "add_affordance": "avh:fragment:folder:add_affordance@besidetab_r1",
+        "folder_system": "avh:fragment:folder:system@r1",
+        "folder_back": "avh:fragment:folder:back@r1",
+        "scan_overlay": "avh:fragment:folder:scan_overlay@r1"
+      },
+      "flow_id": "avh:flow:folder:page_turn_owntab_addtab",
+      "launch_id": "avh:launch:folder:page_turn_owntab_addtab",
+      "launch_label": "folder page turn (owner tab + add)",
+      "flow_patch": {
+        "meta": {
+          "layout": "page_turn"
+        }
+      }
+    }
+  }
+}

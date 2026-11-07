@@ -1,0 +1,47 @@
+<!-- artifact: avh:fragment:folder:add_affordance@besidetab_r1 | + beside owner tab, dropdown add pet/document -->
+<button type="button" class="folder-add-btn" id="folder-add-btn" data-slot="add_affordance" data-artifact="avh:fragment:folder:add_affordance@besidetab_r1" title="Add">+</button>
+<div class="folder-add-menu" id="folder-add-menu" hidden>
+  <button type="button" data-action="pet">Add pet</button>
+  <button type="button" data-action="document">Add document</button>
+</div>
+<style data-artifact="avh:fragment:folder:add_affordance@besidetab_r1">
+  .folder-add-btn {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 1px solid #d4b896;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: #faf6ee;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    touch-action: manipulation;
+  }
+  .folder-add-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    min-width: 160px;
+    margin-top: 2px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+  }
+  .folder-add-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .folder-add-menu button:last-child { border-bottom: none; }
+</style>

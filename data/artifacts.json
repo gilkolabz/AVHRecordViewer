@@ -1,0 +1,619 @@
+{
+  "project_id": "avh_record_viewer",
+  "logical_root": "torus/devops/AVHRecordViewer",
+  "note": "Canonical typed-id catalog for the entire avh_record_viewer project. Author ids here; physical paths live in source_rel until repot. Instance = family-local composed piece (folder_instances.json). Program = layer above instances composing journey/entry/folder (programs.json).",
+  "families": {
+    "folder": "folder screen layouts, fragments, hosts, flows, launches",
+    "entry": "splash entry and splash+folder combo launches/flows",
+    "journey": "shared clinic journey screens and baseline flows",
+    "capture": "scan capture screen",
+    "parse": "OCR parse review screen",
+    "doc": "virtual/scan document screens",
+    "core": "modules, config, init",
+    "data": "registry and demo data artifacts",
+    "schema": "JSON schemas",
+    "devops": "QA/devops surfaces and project docs",
+    "lib": "bundled third-party libs",
+    "program": "composed clinic runtimes (journey + folder + optional entry); see programs.json"
+  },
+  "artifacts": {
+    "avh:fragment:folder:owner_tab@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "owner_tab@r1",
+      "source_rel": "fragments/folder/owner_tab@r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:add_affordance@topright_r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "add_affordance@topright_r1",
+      "source_rel": "fragments/folder/add_affordance@topright_r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:add_affordance@besidetab_r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "add_affordance@besidetab_r1",
+      "source_rel": "fragments/folder/add_affordance@besidetab_r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:system@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "system@r1",
+      "source_rel": "fragments/folder/system@r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:back@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "back@r1",
+      "source_rel": "fragments/folder/back@r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:scan_overlay@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "scan_overlay@r1",
+      "source_rel": "fragments/folder/scan_overlay@r1.html",
+      "status": "shipped"
+    },
+    "avh:fragment:folder:code_row@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "code_row@r1",
+      "source_rel": null,
+      "status": "pencilled"
+    },
+    "avh:fragment:folder:pet_management@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "pet_management@r1",
+      "source_rel": null,
+      "status": "pencilled"
+    },
+    "avh:fragment:folder:section_order@r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "section_order@r1",
+      "source_rel": null,
+      "status": "pencilled"
+    },
+    "avh:fragment:folder:layout_body@overview_r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "layout_body@overview_r1",
+      "source_rel": "ui/folder.html",
+      "status": "legacy"
+    },
+    "avh:fragment:folder:layout_body@pile_r1": {
+      "kind": "fragment",
+      "family": "folder",
+      "leaf": "layout_body@pile_r1",
+      "source_rel": "ui/folder_scans_pile.html",
+      "status": "legacy"
+    },
+    "avh:host:folder:layout_pageturn@r1": {
+      "kind": "host",
+      "family": "folder",
+      "leaf": "layout_pageturn@r1",
+      "source_rel": "fragments/folder/layout_pageturn@r1.html",
+      "status": "shipped"
+    },
+    "avh:instance:folder:overview": {
+      "kind": "instance",
+      "family": "folder",
+      "leaf": "overview",
+      "source_rel": "ui/folder.html",
+      "status": "legacy",
+      "role": "hand-authored"
+    },
+    "avh:instance:folder:pile": {
+      "kind": "instance",
+      "family": "folder",
+      "leaf": "pile",
+      "source_rel": "ui/folder_scans_pile.html",
+      "status": "legacy",
+      "role": "hand-authored"
+    },
+    "avh:instance:folder:page_turn": {
+      "kind": "instance",
+      "family": "folder",
+      "leaf": "page_turn",
+      "source_rel": "ui/folder_scan_pages.html",
+      "status": "legacy",
+      "role": "hand-authored"
+    },
+    "avh:instance:folder:page_turn_owntab": {
+      "kind": "instance",
+      "family": "folder",
+      "leaf": "page_turn_owntab",
+      "source_rel": "ui/folder_page_turn_owntab.html",
+      "status": "shipped",
+      "role": "builder-generated",
+      "variant_of": "avh:instance:folder:page_turn"
+    },
+    "avh:instance:folder:page_turn_owntab_addtab": {
+      "kind": "instance",
+      "family": "folder",
+      "leaf": "page_turn_owntab_addtab",
+      "source_rel": "ui/folder_page_turn_owntab_addtab.html",
+      "status": "shipped",
+      "role": "builder-generated",
+      "variant_of": "avh:instance:folder:page_turn_owntab"
+    },
+    "avh:instance:journey:numpad": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "numpad",
+      "source_rel": "ui/numpad.html",
+      "status": "legacy"
+    },
+    "avh:instance:journey:owners_list": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "owners_list",
+      "source_rel": "ui/owners_list.html",
+      "status": "legacy"
+    },
+    "avh:instance:journey:system": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "system",
+      "source_rel": "ui/system.html",
+      "status": "legacy"
+    },
+    "avh:instance:journey:feedback": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "feedback",
+      "source_rel": "ui/feedback.html",
+      "status": "shipped",
+      "note": "Feedback capture (voice/text/images) reached from the shared System announce header; POSTs to config.feedback.endpoint (placeholder until server exists)."
+    },
+    "avh:instance:journey:result": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "result",
+      "source_rel": "ui/result.html",
+      "status": "legacy"
+    },
+    "avh:instance:journey:create": {
+      "kind": "instance",
+      "family": "journey",
+      "leaf": "create",
+      "source_rel": "ui/create.html",
+      "status": "legacy"
+    },
+    "avh:instance:entry:splash": {
+      "kind": "instance",
+      "family": "entry",
+      "leaf": "splash",
+      "source_rel": "ui/splash.html",
+      "status": "legacy"
+    },
+    "avh:instance:capture:main": {
+      "kind": "instance",
+      "family": "capture",
+      "leaf": "main",
+      "source_rel": "ui/capture.html",
+      "status": "legacy"
+    },
+    "avh:instance:parse:review": {
+      "kind": "instance",
+      "family": "parse",
+      "leaf": "review",
+      "source_rel": "ui/parse_review.html",
+      "status": "legacy"
+    },
+    "avh:instance:doc:sheet": {
+      "kind": "instance",
+      "family": "doc",
+      "leaf": "sheet",
+      "source_rel": "ui/doc_sheet.html",
+      "status": "legacy"
+    },
+    "avh:instance:doc:edit": {
+      "kind": "instance",
+      "family": "doc",
+      "leaf": "edit",
+      "source_rel": "ui/doc_edit.html",
+      "status": "legacy"
+    },
+    "avh:instance:doc:add": {
+      "kind": "instance",
+      "family": "doc",
+      "leaf": "add",
+      "source_rel": "ui/doc_add.html",
+      "status": "legacy"
+    },
+    "avh:instance:doc:pet_add": {
+      "kind": "instance",
+      "family": "doc",
+      "leaf": "pet_add",
+      "source_rel": "ui/pet_add.html",
+      "status": "legacy"
+    },
+    "avh:instance:doc:scan_sheet": {
+      "kind": "instance",
+      "family": "doc",
+      "leaf": "scan_sheet",
+      "source_rel": "ui/scan_sheet.html",
+      "status": "legacy"
+    },
+    "avh:flow:journey:numpad_direct": {
+      "kind": "flow",
+      "family": "journey",
+      "leaf": "numpad_direct",
+      "source_rel": "flow/clinic_numpad_direct.json",
+      "status": "legacy",
+      "legacy_id": "clinic_numpad_direct"
+    },
+    "avh:flow:entry:numpad_splash": {
+      "kind": "flow",
+      "family": "entry",
+      "leaf": "numpad_splash",
+      "source_rel": "flow/clinic_numpad_splash.json",
+      "status": "legacy",
+      "legacy_id": "clinic_numpad_splash"
+    },
+    "avh:flow:folder:overlay": {
+      "kind": "flow",
+      "family": "folder",
+      "leaf": "overlay",
+      "source_rel": "flow/clinic_folder_overlay.json",
+      "status": "legacy",
+      "legacy_id": "clinic_folder_overlay"
+    },
+    "avh:flow:folder:scans_pile": {
+      "kind": "flow",
+      "family": "folder",
+      "leaf": "scans_pile",
+      "source_rel": "flow/clinic_folder_scans_pile.json",
+      "status": "legacy",
+      "legacy_id": "clinic_folder_scans_pile"
+    },
+    "avh:flow:folder:scan_pages": {
+      "kind": "flow",
+      "family": "folder",
+      "leaf": "scan_pages",
+      "source_rel": "flow/clinic_folder_scan_pages.json",
+      "status": "legacy",
+      "legacy_id": "clinic_folder_scan_pages"
+    },
+    "avh:flow:folder:page_turn_owntab": {
+      "kind": "flow",
+      "family": "folder",
+      "leaf": "page_turn_owntab",
+      "source_rel": "flow/flow_folder_page_turn_owntab.json",
+      "status": "shipped",
+      "legacy_id": "flow_folder_page_turn_owntab"
+    },
+    "avh:flow:folder:page_turn_owntab_addtab": {
+      "kind": "flow",
+      "family": "folder",
+      "leaf": "page_turn_owntab_addtab",
+      "source_rel": "flow/flow_folder_page_turn_owntab_addtab.json",
+      "status": "shipped"
+    },
+    "avh:flow:entry:splash_folder_pile": {
+      "kind": "flow",
+      "family": "entry",
+      "leaf": "splash_folder_pile",
+      "source_rel": "flow/clinic_splash_folder_pile.json",
+      "status": "legacy",
+      "legacy_id": "clinic_splash_folder_pile"
+    },
+    "avh:flow:entry:splash_folder_scan_pages": {
+      "kind": "flow",
+      "family": "entry",
+      "leaf": "splash_folder_scan_pages",
+      "source_rel": "flow/clinic_splash_folder_scan_pages.json",
+      "status": "legacy",
+      "legacy_id": "clinic_splash_folder_scan_pages"
+    },
+    "avh:launch:journey:baseline": {
+      "kind": "launch",
+      "family": "journey",
+      "leaf": "baseline",
+      "source_rel": "ui/launch.html",
+      "status": "legacy",
+      "legacy_id": "launch_baseline"
+    },
+    "avh:launch:entry:splash": {
+      "kind": "launch",
+      "family": "entry",
+      "leaf": "splash",
+      "source_rel": "ui/launch_splash.html",
+      "status": "legacy",
+      "legacy_id": "launch_splash"
+    },
+    "avh:launch:folder:pile": {
+      "kind": "launch",
+      "family": "folder",
+      "leaf": "pile",
+      "source_rel": "ui/launch_folder_pile.html",
+      "status": "legacy",
+      "legacy_id": "launch_folder_pile"
+    },
+    "avh:launch:folder:page_turn": {
+      "kind": "launch",
+      "family": "folder",
+      "leaf": "page_turn",
+      "source_rel": "ui/launch_folder_scanpages.html",
+      "status": "legacy",
+      "legacy_id": "launch_folder_scanpages"
+    },
+    "avh:launch:folder:overview": {
+      "kind": "launch",
+      "family": "folder",
+      "leaf": "overview",
+      "source_rel": "ui/launch_folder_overlay.html",
+      "status": "legacy",
+      "legacy_id": "launch_folder_overlay"
+    },
+    "avh:launch:folder:page_turn_owntab": {
+      "kind": "launch",
+      "family": "folder",
+      "leaf": "page_turn_owntab",
+      "source_rel": "ui/launch_folder_page_turn_owntab.html",
+      "status": "shipped",
+      "legacy_id": "launch_folder_page_turn_owntab"
+    },
+    "avh:launch:folder:page_turn_owntab_addtab": {
+      "kind": "launch",
+      "family": "folder",
+      "leaf": "page_turn_owntab_addtab",
+      "source_rel": "ui/launch_folder_page_turn_owntab_addtab.html",
+      "status": "shipped"
+    },
+    "avh:launch:entry:splash_pile": {
+      "kind": "launch",
+      "family": "entry",
+      "leaf": "splash_pile",
+      "source_rel": "ui/launch_splash_pile.html",
+      "status": "stub",
+      "legacy_id": "launch_splash_pile"
+    },
+    "avh:launch:entry:splash_scanpages": {
+      "kind": "launch",
+      "family": "entry",
+      "leaf": "splash_scanpages",
+      "source_rel": "ui/launch_splash_scanpages.html",
+      "status": "stub",
+      "legacy_id": "launch_splash_scanpages"
+    },
+    "avh:launch:devops:linker": {
+      "kind": "launch",
+      "family": "devops",
+      "leaf": "linker",
+      "source_rel": "ui/launch_linker.html",
+      "status": "legacy",
+      "legacy_id": "launch_linker"
+    },
+    "avh:launch:devops:graph": {
+      "kind": "launch",
+      "family": "devops",
+      "leaf": "graph",
+      "source_rel": "ui/launch_graph.html",
+      "status": "legacy",
+      "legacy_id": "launch_graph"
+    },
+    "avh:program:baseline": {
+      "kind": "program",
+      "leaf": "baseline",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:splash_overview": {
+      "kind": "program",
+      "leaf": "splash_overview",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:folder_pile": {
+      "kind": "program",
+      "leaf": "folder_pile",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:folder_page_turn": {
+      "kind": "program",
+      "leaf": "folder_page_turn",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:folder_overview_overlay": {
+      "kind": "program",
+      "leaf": "folder_overview_overlay",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:folder_page_turn_owntab": {
+      "kind": "program",
+      "leaf": "folder_page_turn_owntab",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:folder_page_turn_owntab_addtab": {
+      "kind": "program",
+      "leaf": "folder_page_turn_owntab_addtab",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:program:splash_pile": {
+      "kind": "program",
+      "leaf": "splash_pile",
+      "source_rel": "data/programs.json",
+      "status": "stub"
+    },
+    "avh:program:splash_page_turn": {
+      "kind": "program",
+      "leaf": "splash_page_turn",
+      "source_rel": "data/programs.json",
+      "status": "stub"
+    },
+    "avh:module:core:manager": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "manager",
+      "source_rel": "modules/avh_manager.js",
+      "status": "legacy"
+    },
+    "avh:module:core:registry": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "registry",
+      "source_rel": "modules/avh_registry.js",
+      "status": "legacy"
+    },
+    "avh:module:core:init": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "init",
+      "source_rel": "modules/avh_init.js",
+      "status": "legacy"
+    },
+    "avh:module:core:system": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "system",
+      "source_rel": "modules/avh_system.js",
+      "status": "legacy"
+    },
+    "avh:module:core:ocr": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "ocr",
+      "source_rel": "modules/avh_ocr.js",
+      "status": "legacy"
+    },
+    "avh:module:core:parse": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "parse",
+      "source_rel": "modules/avh_parse.js",
+      "status": "legacy"
+    },
+    "avh:module:core:virtual_view": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "virtual_view",
+      "source_rel": "modules/avh_virtual_view.js",
+      "status": "legacy"
+    },
+    "avh:module:core:capture": {
+      "kind": "module",
+      "family": "core",
+      "leaf": "capture",
+      "source_rel": "modules/avh_capture.js",
+      "status": "legacy"
+    },
+    "avh:config:core:project": {
+      "kind": "config",
+      "family": "core",
+      "leaf": "project",
+      "source_rel": "config.json",
+      "status": "legacy"
+    },
+    "avh:data:demo:owners": {
+      "kind": "data",
+      "family": "demo",
+      "leaf": "owners",
+      "source_rel": "data/demo_owners.json",
+      "status": "legacy"
+    },
+    "avh:data:registry:artifacts": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "artifacts",
+      "source_rel": "data/artifacts.json",
+      "status": "shipped"
+    },
+    "avh:data:registry:launch_index": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "launch_index",
+      "source_rel": "data/launch_index.json",
+      "status": "shipped"
+    },
+    "avh:data:registry:programs": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "programs",
+      "source_rel": "data/programs.json",
+      "status": "shipped"
+    },
+    "avh:data:registry:concepts": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "concepts",
+      "source_rel": "data/folder_concepts.json",
+      "status": "shipped"
+    },
+    "avh:data:registry:instances": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "instances",
+      "source_rel": "data/folder_instances.json",
+      "status": "shipped"
+    },
+    "avh:data:registry:flow_base_folder": {
+      "kind": "data",
+      "family": "registry",
+      "leaf": "flow_base_folder",
+      "source_rel": "data/folder_flow_base.json",
+      "status": "shipped"
+    },
+    "avh:schema:core:digit_colors": {
+      "kind": "schema",
+      "family": "core",
+      "leaf": "digit_colors",
+      "source_rel": "schema/digit_colors.json",
+      "status": "legacy"
+    },
+    "avh:schema:core:owner_record": {
+      "kind": "schema",
+      "family": "core",
+      "leaf": "owner_record",
+      "source_rel": "schema/owner_record.json",
+      "status": "legacy"
+    },
+    "avh:doc:devops:readme": {
+      "kind": "doc",
+      "family": "devops",
+      "leaf": "readme",
+      "source_rel": "readme.md",
+      "status": "legacy"
+    },
+    "avh:doc:devops:devguide": {
+      "kind": "doc",
+      "family": "devops",
+      "leaf": "devguide",
+      "source_rel": "devguide.md",
+      "status": "legacy"
+    },
+    "avh:doc:devops:goals": {
+      "kind": "doc",
+      "family": "devops",
+      "leaf": "goals",
+      "source_rel": "GOALS.md",
+      "status": "legacy"
+    },
+    "avh:lib:ocr:tesseract": {
+      "kind": "lib",
+      "family": "ocr",
+      "leaf": "tesseract",
+      "source_rel": "lib/tesseract/tesseract.min.js",
+      "status": "legacy"
+    },
+    "avh:lib:ocr:tesseract_worker": {
+      "kind": "lib",
+      "family": "ocr",
+      "leaf": "tesseract_worker",
+      "source_rel": "lib/tesseract/worker.min.js",
+      "status": "legacy"
+    }
+  }
+}

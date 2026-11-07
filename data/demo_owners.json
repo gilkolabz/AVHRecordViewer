@@ -1,0 +1,65 @@
+{
+  "owners": [
+    {
+      "code": "12345",
+      "ownerName": "Smith",
+      "pets": [
+        { "id": "pet-smith-1", "name": "Buddy", "species": "dog" },
+        { "id": "pet-smith-2", "name": "Mittens", "species": "cat" }
+      ],
+      "documents": [
+        {
+          "id": "doc-smith-1",
+          "type": "virtual",
+          "title": "Annual checkup — Buddy",
+          "created": "2024-03-15T10:30:00Z",
+          "petId": "pet-smith-1",
+          "content": {
+            "visitType": "annual",
+            "weight_kg": 12.4,
+            "notes": "Healthy. Vaccines current."
+          }
+        },
+        {
+          "id": "doc-smith-2",
+          "type": "virtual",
+          "title": "Dental — Mittens",
+          "created": "2024-06-02T14:00:00Z",
+          "petId": "pet-smith-2",
+          "content": {
+            "visitType": "dental",
+            "notes": "Mild tartar. Recheck in 6 months."
+          }
+        }
+      ]
+    },
+    {
+      "code": "56789",
+      "ownerName": "Johnson",
+      "pets": [
+        { "id": "pet-johnson-1", "name": "Rex", "species": "dog" }
+      ],
+      "documents": [
+        {
+          "id": "doc-johnson-1",
+          "type": "virtual",
+          "title": "Emergency visit — Rex",
+          "created": "2024-11-20T09:15:00Z",
+          "petId": "pet-johnson-1",
+          "content": {
+            "visitType": "emergency",
+            "notes": "Limping rear left. X-ray scheduled."
+          }
+        }
+      ]
+    },
+    {
+      "code": "90123",
+      "ownerName": "Chen",
+      "pets": [
+        { "id": "pet-chen-1", "name": "Luna", "species": "rabbit" }
+      ],
+      "documents": []
+    }
+  ]
+}

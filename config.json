@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "project": "avh_record_viewer",
+  "logical_root": "torus/devops/AVHRecordViewer",
+  "feedback": {
+    "endpoint": "/devops_feedback_host_v1/feedback",
+    "note": "POST target for packaged feedback (voice/text/images + runtime identity). Same-origin path proxied by foobarch to the feedback host."
+  },
+  "pwa": {
+    "name": "AVH Record Viewer",
+    "short_name": "AVH",
+    "description": "Vet clinic demo on foobarch - numpad journey, folder layouts, and composable programs.",
+    "theme_color": "#00897b",
+    "background_color": "#fffef8",
+    "favicon_route": "torus/devops/AVHRecordViewer/favicon.ico"
+  },
+  "flowerpot": {
+    "root": "torus/devops/AVHRecordViewer",
+    "registry_module": "torus/devops/AVHRecordViewer/modules/avh_registry.js",
+    "manager_module": "torus/devops/AVHRecordViewer/modules/avh_manager.js",
+    "system_module": "torus/devops/AVHRecordViewer/modules/avh_system.js",
+    "ocr_module": "torus/devops/AVHRecordViewer/modules/avh_ocr.js",
+    "parse_module": "torus/devops/AVHRecordViewer/modules/avh_parse.js",
+    "virtual_view_module": "torus/devops/AVHRecordViewer/modules/avh_virtual_view.js",
+    "capture_module": "torus/devops/AVHRecordViewer/modules/avh_capture.js",
+    "seed_data": "torus/devops/AVHRecordViewer/data/demo_owners.json",
+    "flow_artifact": "torus/devops/AVHRecordViewer/flow/clinic_numpad_direct.json",
+    "digit_colors": "torus/devops/AVHRecordViewer/schema/digit_colors.json",
+    "launch_fragment": "torus/devops/AVHRecordViewer/ui/launch.html"
+  },
+  "navi_storage": {
+    "registry_cache": "navi:modules:torus/devops/AVHRecordViewer/modules/avh_registry.js"
+  }
+}

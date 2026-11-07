@@ -1,0 +1,80 @@
+{
+  "id": "clinic_folder_overlay",
+  "description": "Baseline journey; flow meta forces scan overlay presentation.",
+  "entry": "numpad",
+  "meta": {
+    "scan_presentation": "overlay",
+    "system_sections": [
+      "clinic"
+    ],
+    "virtual_record_actions": [
+      "edit",
+      "delete"
+    ]
+  },
+  "routes": {
+    "numpad": "/torus/devops/AVHRecordViewer/ui/numpad.html",
+    "owners_list": "/torus/devops/AVHRecordViewer/ui/owners_list.html",
+    "system": "/torus/devops/AVHRecordViewer/ui/system.html",
+    "feedback": "/torus/devops/AVHRecordViewer/ui/feedback.html",
+    "result": "/torus/devops/AVHRecordViewer/ui/result.html",
+    "folder": "/torus/devops/AVHRecordViewer/ui/folder.html",
+    "create": "/torus/devops/AVHRecordViewer/ui/create.html",
+    "capture": "/torus/devops/AVHRecordViewer/ui/capture.html",
+    "parse_review": "/torus/devops/AVHRecordViewer/ui/parse_review.html",
+    "scan_sheet": "/torus/devops/AVHRecordViewer/ui/scan_sheet.html",
+    "doc_sheet": "/torus/devops/AVHRecordViewer/ui/doc_sheet.html",
+    "doc_edit": "/torus/devops/AVHRecordViewer/ui/doc_edit.html",
+    "pet_add": "/torus/devops/AVHRecordViewer/ui/pet_add.html",
+    "doc_add": "/torus/devops/AVHRecordViewer/ui/doc_add.html"
+  },
+  "policy": {
+    "lookup": {
+      "found": "folder",
+      "missing": "result"
+    },
+    "result": {
+      "try_again": "numpad",
+      "create": "create",
+      "cancel": "numpad"
+    },
+    "create": {
+      "success": "folder",
+      "cancel": "numpad"
+    },
+    "capture": {
+      "keep": "folder",
+      "cancel": "folder",
+      "parse": "parse_review"
+    },
+    "owners_list": {
+      "cancel": "numpad"
+    },
+    "system": {
+      "save": "numpad",
+      "cancel": "numpad"
+    },
+    "parse_review": {
+      "done": "folder",
+      "cancel": "capture"
+    },
+    "scan_sheet": {
+      "back": "folder"
+    },
+    "doc_sheet": {
+      "back": "folder"
+    },
+    "doc_edit": {
+      "save": "doc_sheet",
+      "cancel": "doc_sheet",
+      "delete": "folder"
+    },
+    "pet_add": {
+      "save": "folder",
+      "cancel": "folder"
+    },
+    "doc_add": {
+      "cancel": "folder"
+    }
+  }
+}

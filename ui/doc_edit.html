@@ -1,0 +1,172 @@
+<div class="avh_record_viewer-page doc-edit">
+<style>
+  .avh_record_viewer-page.doc-edit { font-family: system-ui, sans-serif; max-width: 520px; margin: 0.5rem auto; padding: 0.5rem; }
+  .doc-edit .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .doc-edit .toolbar .right { display: flex; gap: 8px; margin-left: auto; }
+  .doc-edit .toolbar button { padding: 0.65rem 1rem; min-height: 44px; border-radius: 8px; border: 1px solid #bbb; background: #fafafa; cursor: pointer; }
+  .doc-edit .toolbar button.primary { background: #00897b; color: #fff; border-color: #00695c; }
+  .doc-edit .toolbar button.danger { color: #b00020; border-color: #e0b4b4; background: #fff5f5; }
+  .doc-edit h1 { font-size: 1rem; margin: 0 0 0.25rem; }
+  .doc-edit .meta { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+  .paper-frame { background: #fffef8; border: 1px solid #d4b896; border-radius: 4px; box-shadow: 2px 3px 8px rgba(0,0,0,0.12); padding: 1rem; }
+  .field { margin-bottom: 0.75rem; }
+  .field label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 0.25rem; }
+  .field input, .field textarea { width: 100%; padding: 0.5rem; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+  .hint { font-size: 0.82rem; color: #777; margin: 0.75rem 0 0; }
+  .err { color: #b00020; text-align: center; margin-top: 1rem; }
+  .layout-editor .le-section { border: 1px solid #e0d4c0; border-radius: 6px; padding: 0.6rem; margin-bottom: 0.6rem; background: #fff; }
+  .layout-editor .le-label { width: 100%; padding: 0.4rem; font-size: 0.9rem; font-weight: 600; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; margin-bottom: 0.4rem; }
+  .layout-editor .le-field-row { display: flex; gap: 4px; margin-bottom: 0.3rem; }
+  .layout-editor .le-field-key { flex: 0 0 38%; padding: 0.35rem; font-size: 0.85rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-field-val { flex: 1; padding: 0.35rem; font-size: 0.85rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-field-del { flex: 0 0 32px; border: 1px solid #e0b4b4; background: #fff5f5; color: #b00020; border-radius: 5px; cursor: pointer; }
+  .layout-editor .le-lines { width: 100%; margin-top: 0.4rem; padding: 0.4rem; font-size: 0.88rem; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+  .layout-editor .le-add-field, .layout-editor .le-remove { font-size: 0.75rem; padding: 0.25rem 0.5rem; border: 1px dashed #bbb; border-radius: 5px; background: #fafafa; cursor: pointer; margin-right: 6px; }
+  .layout-editor .le-remove { color: #b00020; border-color: #e0b4b4; }
+  .layout-editor .le-add-section { width: 100%; padding: 0.5rem; font-size: 0.85rem; border: 1px dashed #bbb; border-radius: 6px; background: #fafafa; cursor: pointer; margin-top: 0.25rem; }
+</style>
+<div class="toolbar">
+  <button type="button" id="cancel-btn">Cancel</button>
+  <div class="right">
+    <button type="button" class="danger" id="delete-btn" hidden>Delete record</button>
+    <button type="button" class="primary" id="save-btn">Save</button>
+  </div>
+</div>
+<h1 id="edit-title">Edit virtual record</h1>
+<p class="meta" id="owner-meta"></p>
+<div class="paper-frame" id="paper" hidden>
+  <div id="generic-fields">
+    <div class="field"><label>Title</label><input type="text" id="field-title" /></div>
+    <div class="field"><label>Notes</label><textarea id="field-notes" rows="8"></textarea></div>
+  </div>
+  <div id="pet-details-fields" hidden>
+    <div class="field"><label>Name</label><input type="text" id="field-name" /></div>
+    <div class="field"><label>Species</label><input type="text" id="field-species" /></div>
+    <div class="field"><label>Sex</label><input type="text" id="field-sex" placeholder="optional" /></div>
+    <div class="field"><label>Age</label><input type="text" id="field-age" placeholder="optional" /></div>
+    <div class="field"><label>Misc</label><textarea id="field-misc" rows="4" placeholder="Other details"></textarea></div>
+  </div>
+  <div id="layout-fields" hidden>
+    <div class="field"><label>Title</label><input type="text" id="field-layout-title" /></div>
+    <div class="field"><label>Sections</label><div id="layout-editor-root"></div></div>
+  </div>
+  <p class="hint" id="edit-hint">Previous version is archived on the owner under legacy_documents (timestamp key).</p>
+</div>
+<p class="err" id="error-msg" hidden></p>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) {
+    document.body.innerHTML = "<p>Modules not loaded.</p>";
+    return;
+  }
+
+  let docId = null;
+  let recordKind = null;
+  let editMode = "generic";
+  let baseLayout = null;
+  let layoutMod = null;
+
+  async function loadDoc() {
+    const code = await mgr.getActiveCode();
+    docId = await mgr.getActiveDoc();
+    if (!code || !docId) throw new Error("No document selected");
+    const owner = await reg.getOwner(code);
+    const doc = owner?.documents?.find((d) => d.id === docId);
+    if (!doc || doc.type !== "virtual") throw new Error("Virtual document not found");
+
+    recordKind = doc.content?.recordKind || null;
+    const hasLayout = !!doc.content?.parseLayout?.sections;
+    document.getElementById("owner-meta").textContent =
+      `${owner.ownerName} · ${code}` + (doc.updated ? ` · last saved ${new Date(doc.updated).toLocaleString()}` : "");
+
+    if (recordKind === "pet_details") {
+      editMode = "pet_details";
+      document.getElementById("edit-title").textContent = "Edit pet details";
+      document.getElementById("generic-fields").hidden = true;
+      document.getElementById("pet-details-fields").hidden = false;
+      document.getElementById("field-name").value = doc.content?.name || "";
+      document.getElementById("field-species").value = doc.content?.species || "";
+      document.getElementById("field-sex").value = doc.content?.sex || "";
+      document.getElementById("field-age").value = doc.content?.age || "";
+      document.getElementById("field-misc").value = doc.content?.misc || "";
+      document.getElementById("edit-hint").textContent =
+        "Saving updates the pet details record and syncs name/species on the owner pet list.";
+    } else if (hasLayout) {
+      editMode = "layout";
+      baseLayout = doc.content.parseLayout;
+      document.getElementById("edit-title").textContent = "Edit parsed document";
+      document.getElementById("generic-fields").hidden = true;
+      document.getElementById("layout-fields").hidden = false;
+      document.getElementById("field-layout-title").value = doc.title || "";
+      layoutMod = await mgr.ensureVirtualViewModule();
+      layoutMod.layoutEditor.mount(document.getElementById("layout-editor-root"), baseLayout);
+      document.getElementById("edit-hint").textContent =
+        "Edit parsed sections, fields, and lines. Notes regenerate from sections on save.";
+    } else {
+      editMode = "generic";
+      document.getElementById("field-title").value = doc.title || "";
+      document.getElementById("field-notes").value = doc.content?.notes || "";
+    }
+
+    document.getElementById("paper").hidden = false;
+    const canDelete = await mgr.canDeleteVirtual();
+    document.getElementById("delete-btn").hidden = !canDelete;
+  }
+
+  document.getElementById("cancel-btn").addEventListener("click", () => mgr.go("doc_sheet"));
+
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    const code = await mgr.getActiveCode();
+    if (editMode === "pet_details") {
+      const name = document.getElementById("field-name").value.trim();
+      if (!name) {
+        alert("Name is required");
+        return;
+      }
+      await reg.updateVirtualDoc(code, docId, {
+        name,
+        species: document.getElementById("field-species").value,
+        sex: document.getElementById("field-sex").value,
+        age: document.getElementById("field-age").value,
+        misc: document.getElementById("field-misc").value,
+      });
+    } else if (editMode === "layout") {
+      const title = document.getElementById("field-layout-title").value.trim();
+      if (!title) {
+        alert("Title is required");
+        return;
+      }
+      const { layout } = layoutMod.layoutEditor.read(
+        document.getElementById("layout-editor-root"),
+        baseLayout
+      );
+      await reg.updateVirtualDoc(code, docId, { title, parseLayout: layout });
+    } else {
+      const title = document.getElementById("field-title").value.trim();
+      const notes = document.getElementById("field-notes").value;
+      if (!title) {
+        alert("Title is required");
+        return;
+      }
+      await reg.updateVirtualDoc(code, docId, { title, notes });
+    }
+    await mgr.go("doc_sheet");
+  });
+
+  document.getElementById("delete-btn").addEventListener("click", async () => {
+    if (!confirm("Delete this virtual record? A copy moves to legacy_documents.")) return;
+    const code = await mgr.getActiveCode();
+    await reg.deleteVirtualDoc(code, docId);
+    await mgr.setActiveDoc("");
+    await mgr.go("folder");
+  });
+
+  loadDoc().catch((e) => {
+    document.getElementById("error-msg").hidden = false;
+    document.getElementById("error-msg").textContent = e.message;
+  });
+})();
+</script>
+</div>

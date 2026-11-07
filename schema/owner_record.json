@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "AVHRecordViewer/owner_record",
+  "title": "OwnerRecord",
+  "description": "One folder per owner. Code is exactly 5 digits. Digit colors are derived from digit_colors.json — not stored here.",
+  "type": "object",
+  "required": ["code", "ownerName", "pets", "documents"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "description": "5-digit owner number (colors implied per digit)"
+    },
+    "ownerName": {
+      "type": "string"
+    },
+    "pets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "species": { "type": "string" }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/virtualDocument" },
+          { "$ref": "#/definitions/scanDocument" }
+        ]
+      }
+    },
+    "legacy_documents": {
+      "type": "object",
+      "description": "Map of ISO timestamp keys to archived document snapshots (edit or delete).",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["reason", "archivedAt", "document"],
+        "properties": {
+          "reason": { "enum": ["edit", "delete"] },
+          "archivedAt": { "type": "string" },
+          "document": { "type": "object" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "documentBase": {
+      "type": "object",
+      "required": ["id", "type", "title", "created"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" },
+        "petId": { "type": "string", "description": "Optional link to a specific pet" },
+        "updated": { "type": "string", "format": "date-time", "description": "Last edit time (virtual docs)" }
+      }
+    },
+    "virtualDocument": {
+      "allOf": [
+        { "$ref": "#/definitions/documentBase" },
+        {
+          "type": "object",
+          "required": ["type", "content"],
+          "properties": {
+            "type": { "const": "virtual" },
+            "content": {
+              "type": "object",
+              "properties": {
+                "recordKind": {
+                  "type": "string",
+                  "description": "Virtual subtype, e.g. pet_details for structured pet sheet"
+                },
+                "viewTemplate": { "type": "string" },
+                "notes": { "type": "string" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "scanDocument": {
+      "allOf": [
+        { "$ref": "#/definitions/documentBase" },
+        {
+          "type": "object",
+          "required": ["type", "storagePath"],
+          "properties": {
+            "type": { "const": "scan" },
+            "storagePath": {
+              "type": "string",
+              "description": "navi.storage.file path for the image blob"
+            },
+            "mime": { "type": "string", "default": "image/jpeg" }
+          }
+        }
+      ]
+    }
+  }
+}

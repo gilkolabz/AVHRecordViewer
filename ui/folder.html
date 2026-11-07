@@ -1,0 +1,292 @@
+<div class="avh_record_viewer-page folder">
+<style>
+  .avh_record_viewer-page.folder {
+    box-sizing: border-box;
+    font-family: system-ui, sans-serif;
+    max-width: 520px;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0 auto;
+    padding: 0.25rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .folder-manilla { display: flex; flex-direction: column; flex: 1; min-height: 0; align-items: stretch; }
+  .folder-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; width: 100%; flex-shrink: 0; }
+  .folder-tab-row { display: flex; align-items: flex-end; gap: 4px; flex: 1; min-width: 0; position: relative; }
+  .folder-tab { background: #f5e6c8; border: 1px solid #d4b896; border-bottom: none; border-radius: 6px 6px 0 0; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.9rem; flex: 0 1 auto; width: auto; max-width: min(70vw, 14rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder-add-btn { width: 34px; height: 34px; flex-shrink: 0; border: 1px solid #d4b896; border-bottom: none; border-radius: 6px 6px 0 0; background: #faf6ee; font-size: 1.2rem; line-height: 1; cursor: pointer; color: #555; }
+  .folder-add-menu { position: absolute; top: 100%; left: 0; z-index: 20; min-width: 160px; margin-top: 2px; border: 1px solid #ccc; border-radius: 6px; background: #fff; box-shadow: 2px 4px 12px rgba(0,0,0,0.12); overflow: hidden; }
+  .folder-add-menu button { display: block; width: 100%; text-align: left; padding: 0.55rem 0.75rem; border: none; border-bottom: 1px solid #eee; background: #fff; cursor: pointer; font-size: 0.9rem; }
+  .folder-add-menu button:last-child { border-bottom: none; }
+  .folder-top-btns { display: flex; gap: 4px; flex-shrink: 0; padding-bottom: 1px; }
+  .folder-top-btns button { padding: 0.35rem 0.55rem; font-size: 0.85rem; border-radius: 6px; border: 1px solid #bbb; cursor: pointer; background: #fafafa; min-height: 34px; }
+  .folder-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #d4b896;
+    border-radius: 0 6px 6px 6px;
+    padding: 0.75rem;
+    background: #fffef8;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.08);
+  }
+  .code-row { display: flex; gap: 4px; margin: 0.5rem 0 1rem; }
+  .code-row span { width: 24px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; font-size: 0.85rem; }
+  .section { margin-top: 0.75rem; }
+  .section h2 { font-size: 0.95rem; margin: 0 0 0.5rem; color: #555; }
+  .pet-list { list-style: none; padding: 0; margin: 0; }
+  .pet-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0.4rem 0; border-bottom: 1px solid #eee; }
+  .pet-list li small { color: #888; }
+  .pet-list .pet-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .pet-list .pet-actions button { padding: 0.25rem 0.45rem; font-size: 0.75rem; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; }
+  .doc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .doc-block { display: block; width: 100%; text-align: left; padding: 1rem; min-height: 52px; font-size: 1rem; border: 2px solid #d4b896; border-radius: 8px; background: #fff; cursor: pointer; }
+  .doc-block:active { background: #f5f0e6; }
+  .doc-block small { display: block; color: #666; font-size: 0.8rem; margin-top: 0.25rem; }
+  .doc-block.virtual { border-color: #b8c9e0; }
+  .doc-subsection { margin-top: 0.85rem; padding: 0.5rem 0.6rem; background: #faf6ee; border-radius: 6px; border-left: 3px solid #d4b896; }
+  .doc-subsection h3 { font-size: 0.9rem; margin: 0 0 0.4rem; color: #444; font-weight: 700; }
+  .section-foot { margin-top: 0.5rem; }
+  .section-foot button { width: 100%; padding: 0.45rem; font-size: 0.85rem; border: 1px dashed #bbb; border-radius: 6px; background: #fff; cursor: pointer; color: #555; }
+  .empty-hint { font-size: 0.85rem; color: #888; margin: 0.25rem 0; }
+  .scan-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.55); }
+  .scan-overlay.open { display: flex; }
+  .scan-overlay .paper { max-width: 480px; width: 100%; max-height: 90vh; overflow: auto; background: #fffef8; border: 1px solid #d4b896; box-shadow: 4px 6px 20px rgba(0,0,0,0.25); padding: 0.75rem; border-radius: 4px; }
+  .scan-overlay img { width: 100%; height: auto; display: block; }
+  .scan-overlay .close-row { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+  .scan-overlay .close-row button { padding: 0.5rem 1rem; min-height: 44px; border-radius: 8px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
+</style>
+<div class="folder-manilla">
+  <div class="folder-top">
+    <div class="folder-tab-row">
+      <div class="folder-tab" id="folder-tab">… folder</div>
+      <button type="button" class="folder-add-btn" id="folder-add-btn" title="Add">+</button>
+      <div class="folder-add-menu" id="folder-add-menu" hidden>
+        <button type="button" data-action="pet">Add pet</button>
+        <button type="button" data-action="document">Add document</button>
+      </div>
+    </div>
+    <div class="folder-top-btns">
+      <button type="button" id="system-btn">System</button>
+      <button type="button" id="back-btn">Back</button>
+    </div>
+  </div>
+  <div class="folder-body">
+    <div class="code-row" id="code-row"></div>
+    <div id="main-sections"></div>
+  </div>
+</div>
+<div class="scan-overlay" id="scan-overlay">
+  <div class="paper" id="overlay-paper">
+    <div class="close-row"><button type="button" id="overlay-close">Close</button></div>
+    <div id="overlay-label" style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;word-break:break-all"></div>
+    <img id="overlay-img" alt="Scan" />
+  </div>
+</div>
+<script>
+(function () {
+  const mgr = navi.mod.avh_manager?.manager;
+  const reg = navi.mod.avh_registry?.registry;
+  if (!mgr || !reg) {
+    document.body.innerHTML = "<p>Modules not loaded. Run: avh_record_viewer bootstrap</p>";
+    return;
+  }
+  mgr.applyProgramPwa?.();
+
+  let currentOwner = null;
+  const overlayEl = document.getElementById("scan-overlay");
+  const addMenu = document.getElementById("folder-add-menu");
+
+  function hideScanOverlay() {
+    overlayEl.classList.remove("open");
+  }
+
+  function closeAddMenu() {
+    addMenu.hidden = true;
+  }
+
+  function petDetailsDoc(owner, petId) {
+    return owner?.documents?.find(
+      (d) =>
+        d.type === "virtual" &&
+        d.petId === petId &&
+        d.content?.recordKind === "pet_details"
+    );
+  }
+
+  async function showScanOverlay(docId) {
+    const doc = currentOwner?.documents?.find((d) => d.id === docId);
+    if (!doc || doc.type !== "scan") return;
+    const raw = await navi.storage.file.load(doc.storagePath);
+    if (!raw) return;
+    const mime = doc.mime || "image/jpeg";
+    document.getElementById("overlay-label").textContent = doc.title;
+    document.getElementById("overlay-img").src = raw.startsWith("data:") ? raw : `data:${mime};base64,${raw}`;
+    overlayEl.classList.add("open");
+  }
+
+  function sectionFoot(label, onClick) {
+    const foot = document.createElement("div");
+    foot.className = "section-foot";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = label;
+    btn.addEventListener("click", onClick);
+    foot.appendChild(btn);
+    return foot;
+  }
+
+  function appendDocRow(parent, doc) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "doc-block" + (doc.type === "virtual" ? " virtual" : "");
+    if (doc.type === "scan") {
+      btn.innerHTML = `scan<small>${doc.title}</small>`;
+      btn.addEventListener("click", () => mgr.openScanView(doc.id, () => showScanOverlay(doc.id)));
+    } else {
+      const kind = doc.content?.recordKind === "pet_details" ? "pet details" : "record";
+      btn.innerHTML = `${kind}<small>${doc.title}</small>`;
+      btn.addEventListener("click", () => mgr.openDoc(doc.id));
+    }
+    li.appendChild(btn);
+    parent.appendChild(li);
+  }
+
+  function appendDocGroup(container, title, docs, petId) {
+    const wrap = document.createElement("div");
+    wrap.className = "doc-subsection";
+    wrap.innerHTML = `<h3>${title}</h3>`;
+    if (!docs.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-hint";
+      empty.textContent = "No documents yet";
+      wrap.appendChild(empty);
+    } else {
+      const ul = document.createElement("ul");
+      ul.className = "doc-list";
+      for (const d of docs) appendDocRow(ul, d);
+      wrap.appendChild(ul);
+    }
+    wrap.appendChild(
+      sectionFoot("+ Add document", () => mgr.openDocAdd({ petId: petId || "" }))
+    );
+    container.appendChild(wrap);
+  }
+
+  function buildPetsSection(owner) {
+    const section = document.createElement("div");
+    section.className = "section";
+    section.innerHTML = "<h2>Pets</h2>";
+    const ul = document.createElement("ul");
+    ul.className = "pet-list";
+    if (!owner.pets.length) {
+      ul.innerHTML = '<li class="empty-hint" style="list-style:none">No pets yet</li>';
+    } else {
+      for (const p of owner.pets) {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.innerHTML = `${p.name} <small>(${p.species})</small>`;
+        const actions = document.createElement("span");
+        actions.className = "pet-actions";
+        const detailsBtn = document.createElement("button");
+        detailsBtn.type = "button";
+        detailsBtn.textContent = petDetailsDoc(owner, p.id) ? "Details" : "Add details";
+        detailsBtn.addEventListener("click", () => mgr.openPetDetailsDoc(p.id));
+        actions.appendChild(detailsBtn);
+        li.appendChild(label);
+        li.appendChild(actions);
+        ul.appendChild(li);
+      }
+    }
+    section.appendChild(ul);
+    section.appendChild(sectionFoot("+ Add pet", () => mgr.openPetAdd()));
+    return section;
+  }
+
+  function buildDocsSection(owner, prefs) {
+    const section = document.createElement("div");
+    section.className = "section";
+    section.innerHTML = "<h2>Documents</h2>";
+    const inner = document.createElement("div");
+    const docs = mgr.filterDocs(owner, prefs.virtualEnabled);
+    const general = docs.filter((d) => !d.petId);
+    appendDocGroup(inner, "General", general, "");
+    for (const pet of owner.pets || []) {
+      const petDocs = docs.filter((d) => d.petId === pet.id);
+      appendDocGroup(inner, pet.name, petDocs, pet.id);
+    }
+    section.appendChild(inner);
+    return section;
+  }
+
+  async function render() {
+    const code = await mgr.getActiveCode();
+    if (!code) {
+      document.getElementById("folder-tab").textContent = "No active folder";
+      return;
+    }
+    await mgr.loadDigitColors();
+    const owner = await reg.getOwner(code);
+    currentOwner = owner;
+    if (!owner) {
+      document.getElementById("folder-tab").textContent = "Record not found";
+      return;
+    }
+
+    document.getElementById("folder-tab").textContent = `${owner.ownerName} folder`;
+
+    const codeRow = document.getElementById("code-row");
+    codeRow.innerHTML = "";
+    for (const d of owner.code) {
+      const el = document.createElement("span");
+      el.textContent = d;
+      el.style.background = mgr.colorForDigit(d);
+      codeRow.appendChild(el);
+    }
+
+    const prefs = await mgr.getPrefs();
+    const main = document.getElementById("main-sections");
+    main.innerHTML = "";
+    const petsSection = buildPetsSection(owner);
+    const docsSection = buildDocsSection(owner, prefs);
+    if (prefs.folderSectionOrder === "docs_first") {
+      main.appendChild(docsSection);
+      main.appendChild(petsSection);
+    } else {
+      main.appendChild(petsSection);
+      main.appendChild(docsSection);
+    }
+  }
+
+  document.getElementById("folder-add-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    addMenu.hidden = !addMenu.hidden;
+  });
+  addMenu.querySelector('[data-action="pet"]').addEventListener("click", () => {
+    closeAddMenu();
+    mgr.openPetAdd();
+  });
+  addMenu.querySelector('[data-action="document"]').addEventListener("click", () => {
+    closeAddMenu();
+    mgr.openDocAdd();
+  });
+  document.addEventListener("click", closeAddMenu);
+  addMenu.addEventListener("click", (e) => e.stopPropagation());
+
+  document.getElementById("overlay-close").addEventListener("click", hideScanOverlay);
+  overlayEl.addEventListener("click", (e) => {
+    if (e.target === overlayEl) hideScanOverlay();
+  });
+  document.getElementById("overlay-paper").addEventListener("click", (e) => e.stopPropagation());
+  document.getElementById("system-btn").addEventListener("click", () => mgr.openSystem("folder"));
+  document.getElementById("back-btn").addEventListener("click", () => mgr.go("numpad"));
+  render();
+})();
+</script>
+</div>

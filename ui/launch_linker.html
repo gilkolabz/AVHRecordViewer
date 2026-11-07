@@ -1,0 +1,166 @@
+<div class="avh_record_viewer-page launch-linker">
+<style>
+  .avh_record_viewer-page.launch-linker {
+    box-sizing: border-box;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    font-family: system-ui, sans-serif;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1rem 1rem 2rem;
+    line-height: 1.45;
+  }
+  .avh_record_viewer-page.launch-linker .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #888;
+    margin: 0 0 0.25rem;
+  }
+  .avh_record_viewer-page.launch-linker h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+  .avh_record_viewer-page.launch-linker .subtitle {
+    font-size: 0.95rem;
+    color: #333;
+    margin: 0 0 1.25rem;
+  }
+  .focus {
+    background: #fff8e1;
+    border: 1px solid #f0d78c;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .focus h2 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+  .focus p { margin: 0; font-size: 0.9rem; }
+  .intro {
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+    color: #444;
+  }
+  .intro h2 {
+    font-size: 0.95rem;
+    margin: 0 0 0.45rem;
+    color: #222;
+  }
+  .intro p { margin: 0; }
+  .demo-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 0.85rem; }
+  .demo-card h2 { font-size: 1rem; margin: 0 0 0.35rem; }
+  .demo-card a { font-weight: 600; }
+  .demo-card .flow { font-size: 0.8rem; color: #888; margin: 0.2rem 0 0.5rem; }
+  .demo-card ul { margin: 0.35rem 0 0; padding-left: 1.2rem; font-size: 0.88rem; }
+  .demo-card li { margin: 0.25rem 0; }
+  .codes { font-size: 0.85rem; color: #555; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #eee; }
+  .graph-link { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+  .graph-link a { display: inline-block; padding: 0.65rem 1rem; border: 1px solid #00897b; border-radius: 8px; color: #00897b; text-decoration: none; font-weight: 600; }
+</style>
+
+<p class="eyebrow">project</p>
+<h1>avh_record_viewer</h1>
+<p class="subtitle">Record Handler Tool: view/add/edit local patient records, find via numpad, folder views (table, pagination, pile), document scanning, local ML model document parsing, and more</p>
+
+<div class="focus">
+  <h2>Active notes</h2>
+  <p>Functional but could look a lot better. Can send to homescreen as an app. Could use improved styling and presentation. Pending: real document types, better page-turn controls, a way to browse previous edits, desktop mode properly sized interface, importing records from other record hosts.</p>
+</div>
+
+<section class="intro">
+  <h2>Launches</h2>
+  <p>The following include hyperlinks to launch different instances of the project. <strong>baseline</strong> is the latest of the most &ldquo;standard&rdquo; implementation. Each instance is composed of individual components that do currently have variations or alternate combinations. A select few of these are also hyperlinked. A project release can compose the best elements of each concern, and these launchers surface some of that scope that cannot be seen in one baseline flow.</p>
+</section>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch.html">Baseline clinic</a></h2>
+  <p class="flow">flow: clinic_numpad_direct · layout: overview (inline pets + documents)</p>
+  <ul>
+    <li>Numpad codes <strong>12345</strong> (Smith — docs under <strong>Buddy</strong> / <strong>Mittens</strong>), <strong>56789</strong> (Johnson — doc under <strong>Rex</strong>), <strong>90123</strong> (Chen — empty).</li>
+    <li>Folder → System → <strong>Capabilities</strong>: warm up OCR before capture if you want automatic fill on parse review.</li>
+    <li>Capture → <strong>Parse</strong>: manual fields by default; OCR auto-runs only if worker was warmed in Capabilities.</li>
+    <li><strong>View source scan</strong> on virtual record sheet only (open record → button at bottom). Not in folder list.</li>
+    <li>Open virtual record → <strong>Edit</strong> (top right) → change title/notes → Save. Prior version in owner <code>legacy_documents</code> (devtools / callin). Delete moves record to legacy and removes from folder.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_splash.html">Splash entry</a></h2>
+  <p class="flow">flow: clinic_numpad_splash</p>
+  <ul>
+    <li>Splash screen appears, then continues to numpad.</li>
+    <li>Same journey as baseline after entry — quick smoke that splash route does not break bootstrap.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_splash_pile.html">Splash + scan pile</a> <span style="font-size:0.8rem;color:#888">(combo stub)</span></h2>
+  <p class="flow">flow: clinic_splash_folder_pile</p>
+  <ul>
+    <li>Splash entry, then numpad, then pile folder on code lookup.</li>
+    <li>Smoke test only — confirms combo launch + flow wiring.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_splash_scanpages.html">Splash + page turns</a> <span style="font-size:0.8rem;color:#888">(combo stub)</span></h2>
+  <p class="flow">flow: clinic_splash_folder_scan_pages</p>
+  <ul>
+    <li>Splash → numpad → page-turn folder. Same Phase 5 folder features as page-turn launch.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_folder_pile.html">Folder — scan pile</a></h2>
+  <p class="flow">flow: clinic_folder_scans_pile</p>
+  <ul>
+    <li>Fixed header: pets + virtual records (hidden when virtual off in system).</li>
+    <li>Scroll pile: stacked scan cards; tap opens sheet or overlay.</li>
+    <li>System from folder: clinic section; Save returns to pile.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_folder_scanpages.html">Folder — page turns</a></h2>
+  <p class="flow">flow: clinic_folder_scan_pages · layout: page_turn (hand-authored)</p>
+  <ul>
+    <li>‹ › and page dots; overview, one virtual page each, one scan per page.</li>
+    <li>Top bar: System / Back / teal + Add — no owner manilla tab.</li>
+    <li>System: Clinic + Page-turn sections.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_folder_page_turn_owntab.html">Folder — page turns (owner tab)</a></h2>
+  <p class="flow">flow: flow_folder_page_turn_owntab · builder-composed</p>
+  <ul>
+    <li>Owner tab fused to folder body like overview manilla lip; shrink-to-fit width.</li>
+    <li>Tab only — no + affordance. System / Back on the right.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_folder_page_turn_owntab_addtab.html">Folder — page turns (owner tab + add)</a></h2>
+  <p class="flow">flow: flow_folder_page_turn_owntab_addtab · builder-composed</p>
+  <ul>
+    <li>Page-turn pager with overview-style owner tab + <strong>+</strong> beside tab (Add pet / Add document).</li>
+    <li>Shop this for baseline chrome on page-turn layout.</li>
+  </ul>
+</article>
+
+<article class="demo-card">
+  <h2><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_folder_overlay.html">Folder — overlay default</a></h2>
+  <p class="flow">flow: clinic_folder_overlay · meta scan_presentation: overlay</p>
+  <ul>
+    <li>Baseline <strong>overview</strong> layout; tapping scan opens in-page overlay (flow default).</li>
+    <li>User prefs in system still win over flow meta - toggle sheet in system and confirm behavior flips.</li>
+  </ul>
+</article>
+
+<p class="codes">Demo owner codes: <strong>12345</strong> (Smith), <strong>56789</strong> (Johnson), <strong>90123</strong> (Williams). Data is local navi.storage; re-seed via callin if empty.</p>
+
+<p class="graph-link"><a href="https://foobarch.net/torus/devops/AVHRecordViewer/ui/launch_graph.html">Open launch graph explorer →</a> all launches, stubs, and planned combos; filter by type and status.</p>
+</div>

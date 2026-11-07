@@ -1,0 +1,26 @@
+{
+  "project_id": "avh_record_viewer",
+  "logical_root": "torus/devops/AVHRecordViewer",
+  "note": "Product registry entrypoint. Canonical catalog: data/artifacts.json (entire project). Programs compose family instances into runnable clinic paths: data/programs.json. Folder composition detail: folder_concepts.json + folder_instances.json + folder_flow_base.json. Launch matrix: launch_index.json (typed ids, program_id per clinic launch).",
+  "catalog": "data/artifacts.json",
+  "programs": "data/programs.json",
+  "launch_index": "data/launch_index.json",
+  "families": {
+    "folder": {
+      "family_id": "avh:family:folder",
+      "composition": {
+        "concepts": "data/folder_concepts.json",
+        "instances": "data/folder_instances.json",
+        "flow_base": "data/folder_flow_base.json",
+        "builder": "A_devops/_build_folder.mjs"
+      }
+    },
+    "journey": { "family_id": "avh:family:journey" },
+    "entry": { "family_id": "avh:family:entry" },
+    "capture": { "family_id": "avh:family:capture" },
+    "parse": { "family_id": "avh:family:parse" },
+    "doc": { "family_id": "avh:family:doc" },
+    "core": { "family_id": "avh:family:core" },
+    "devops": { "family_id": "avh:family:devops" }
+  }
+}

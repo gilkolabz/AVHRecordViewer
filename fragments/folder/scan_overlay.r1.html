@@ -1,0 +1,14 @@
+<!-- artifact: scan_overlay@r1 | tap-a-scan full-screen modal overlay -->
+<div class="scan-overlay" id="scan-overlay" data-slot="scan_overlay" data-artifact="scan_overlay@r1">
+  <div class="paper" id="overlay-paper">
+    <button type="button" id="overlay-close" style="float:right;min-height:44px">Close</button>
+    <div style="clear:both"></div>
+    <img id="overlay-img" alt="Scan" />
+  </div>
+</div>
+<style data-artifact="scan_overlay@r1">
+  .scan-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.55); }
+  .scan-overlay.open { display: flex; }
+  .scan-overlay .paper { max-width: 480px; width: 100%; max-height: 90vh; overflow: auto; background: #fffef8; border: 1px solid #d4b896; padding: 0.75rem; }
+  .scan-overlay img { width: 100%; display: block; }
+</style>

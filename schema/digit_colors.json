@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "AVHRecordViewer/digit_colors",
+  "title": "DigitColorMap",
+  "description": "Single-digit numpad colors (0–9). Owner lookup codes are five digits; each digit is colored from this hex map — not stored on the owner record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+  "properties": {
+    "0": { "const": "#771c40" },
+    "1": { "const": "#e995b2" },
+    "2": { "const": "#fdd835" },
+    "3": { "const": "#ff9800" },
+    "4": { "const": "#43a047" },
+    "5": { "const": "#0074f1" },
+    "6": { "const": "#7a6b94" },
+    "7": { "const": "#34283f" },
+    "8": { "const": "#787d7a" },
+    "9": { "const": "#686951" }
+  }
+}
